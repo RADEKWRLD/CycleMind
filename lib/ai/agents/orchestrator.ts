@@ -17,7 +17,7 @@ export async function orchestrate(prompt: string): Promise<AgentType[]> {
 
     const content = response.choices[0]?.message?.content?.trim() || "[]";
     // Extract JSON array from response
-    const match = content.match(/\[.*\]/s);
+    const match = content.match(/\[[\s\S]*\]/);
     if (match) {
       const agents = JSON.parse(match[0]) as string[];
       return agents.filter((a): a is AgentType =>

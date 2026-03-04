@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
 import { ChatPanel } from "@/components/workspace/chat-panel";
 import { PreviewPanel } from "@/components/workspace/preview-panel";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "react-resizable-panels";
 import type { Session, Message, Document } from "@/types";
 
 type DocTab = "mermaid" | "api_spec" | "arch_design" | "dev_plan";
@@ -133,24 +132,21 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           </span>
         )}
       </div>
-      <div className="flex-1">
-        <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-7rem)]">
-          <ResizablePanel defaultSize={40} minSize={25}>
-            <ChatPanel
-              sessionId={id}
-              messages={messages}
-              onSend={handleSend}
-              isSending={isSending}
-            />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={60} minSize={30}>
-            <PreviewPanel
-              documents={documents}
-              onSaveDocument={handleSaveDocument}
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+      <div className="flex-1 flex h-[calc(100vh-7rem)]">
+        <div className="w-2/5 min-w-[300px] border-r border-[var(--border)]">
+          <ChatPanel
+            sessionId={id}
+            messages={messages}
+            onSend={handleSend}
+            isSending={isSending}
+          />
+        </div>
+        <div className="flex-1">
+          <PreviewPanel
+            documents={documents}
+            onSaveDocument={handleSaveDocument}
+          />
+        </div>
       </div>
     </>
   );
