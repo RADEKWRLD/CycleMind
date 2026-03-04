@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
 import { ChatPanel } from "@/components/workspace/chat-panel";
 import { PreviewPanel } from "@/components/workspace/preview-panel";
+import { useGenerationStore } from "@/stores/generation-store";
 import { AGENT_LABELS, AGENT_DESCRIPTIONS } from "@/lib/ai/agent-meta";
-import type { Session, Message, Document, StreamStep, AgentToolPart, AgentConfirmationItem } from "@/types";
+import type { Session, Message, Document, AgentConfirmationItem } from "@/types";
 
 type DocTab = "mermaid" | "er" | "api_spec" | "arch_design" | "dev_plan";
 
@@ -29,16 +30,24 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const [isChatting, setIsChatting] = useState(false);
   const [streamingText, setStreamingText] = useState("");
   const [isOrchestrating, setIsOrchestrating] = useState(false);
-  const [isExecuting, setIsExecuting] = useState(false);
   const [pendingConfirmation, setPendingConfirmation] = useState<{
     agents: AgentConfirmationItem[];
     prompt: string;
   } | null>(null);
-  const [streamSteps, setStreamSteps] = useState<StreamStep[]>([]);
-  const [agentToolParts, setAgentToolParts] = useState<Map<string, AgentToolPart>>(new Map());
+  const [orchSteps, setOrchSteps] = useState<{ id: string; label: string; status: "running" | "done" | "error" }[]>([]);
   const [previewOpen, setPreviewOpen] = useState(true);
   const previewRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
+
+  // Generation state from global store (survives page navigation)
+  const generationRun = useGenerationStore((s) => s.runs.get(id));
+  const startGeneration = useGenerationStore((s) => s.startGeneration);
+  const clearGeneration = useGenerationStore((s) => s.clearGeneration);
+
+  const isExecuting = generationRun?.status === "running";
+  const streamSteps = isOrchestrating ? orchSteps : (generationRun?.streamSteps ?? []);
+  const agentToolParts = generationRun?.agentToolParts ?? new Map();
+  const prevDocCountRef = useRef(0);
 
   const fetchData = useCallback(async () => {
     const [sessionRes, messagesRes, docsRes] = await Promise.all([
@@ -103,6 +112,32 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     fetchData();
   }, [fetchData]);
 
+  // Sync doc count ref on mount (in case returning to a running generation)
+  useEffect(() => {
+    if (generationRun) {
+      prevDocCountRef.current = generationRun.completedDocs.length;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // React to generation store changes: refetch docs and data
+  useEffect(() => {
+    if (!generationRun) return;
+
+    const currentDocCount = generationRun.completedDocs.length;
+    if (currentDocCount > prevDocCountRef.current) {
+      fetchDocuments();
+      prevDocCountRef.current = currentDocCount;
+    }
+
+    if (generationRun.status === "completed" || generationRun.status === "error") {
+      fetchData();
+      prevDocCountRef.current = 0;
+      // Clear finished generation from store after data refresh
+      clearGeneration(id);
+    }
+  }, [generationRun?.completedDocs.length, generationRun?.status, fetchDocuments, fetchData, clearGeneration, id]);
+
   const isSending = isChatting || isOrchestrating || isExecuting;
 
   // Phase 1: Chat with conversation agent (streaming)
@@ -111,8 +146,6 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
 
     setIsChatting(true);
     setStreamingText("");
-    setStreamSteps([]);
-    setAgentToolParts(new Map());
     setPendingConfirmation(null);
 
     // Optimistic: show user message immediately
@@ -202,7 +235,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   // Orchestrate — get agent plan, show confirmation
   async function triggerOrchestration(prompt: string) {
     setIsOrchestrating(true);
-    setStreamSteps([{ id: "orch", label: "需求已就绪，正在分析...", status: "done" }]);
+    setOrchSteps([{ id: "orch", label: "需求已就绪，正在分析...", status: "done" }]);
 
     try {
       const res = await fetch("/api/orchestrate", {
@@ -222,11 +255,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         enabled: true,
       }));
 
-      setStreamSteps([]);
+      setOrchSteps([]);
       setPendingConfirmation({ agents: items, prompt });
     } catch (err) {
       console.error("Orchestration failed:", err);
-      setStreamSteps([
+      setOrchSteps([
         { id: `error-${Date.now()}`, label: "分析失败，请重试", status: "error" },
       ]);
     } finally {
@@ -234,117 +267,18 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     }
   }
 
-  // Phase 2: Execute confirmed agents
-  async function handleConfirm(selectedIds: string[]) {
+  // Phase 2: Execute confirmed agents (delegated to global generation store)
+  function handleConfirm(selectedIds: string[]) {
     if (!pendingConfirmation) return;
     const { prompt } = pendingConfirmation;
     setPendingConfirmation(null);
-    setIsExecuting(true);
-    setStreamSteps([]);
-    setAgentToolParts(new Map());
 
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: id, prompt, confirmedAgents: selectedIds }),
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (reader) {
-        let buffer = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n\n");
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            const dataLine = line.replace(/^data: /, "");
-            if (!dataLine) continue;
-            try {
-              const event = JSON.parse(dataLine);
-              switch (event.type) {
-                case "status":
-                  setStreamSteps((prev) => [
-                    ...prev,
-                    { id: `status-${Date.now()}`, label: event.message, status: "done" },
-                  ]);
-                  break;
-                case "agent_start":
-                  setAgentToolParts((prev) => {
-                    const next = new Map(prev);
-                    next.set(event.agent, {
-                      type: event.label,
-                      state: "input-streaming",
-                      input: event.input,
-                      toolCallId: event.agent,
-                    });
-                    return next;
-                  });
-                  break;
-                case "agent_output":
-                  setAgentToolParts((prev) => {
-                    const next = new Map(prev);
-                    const existing = next.get(event.agent);
-                    if (existing) {
-                      next.set(event.agent, {
-                        ...existing,
-                        state: "output-available",
-                        output: event.output,
-                      });
-                    }
-                    return next;
-                  });
-                  break;
-                case "doc_saved":
-                  fetchDocuments();
-                  break;
-                case "agent_error":
-                  setAgentToolParts((prev) => {
-                    const next = new Map(prev);
-                    const existing = next.get(event.agent);
-                    if (existing) {
-                      next.set(event.agent, {
-                        ...existing,
-                        state: "output-error",
-                        errorText: event.errorText,
-                      });
-                    }
-                    return next;
-                  });
-                  break;
-                case "done":
-                  break;
-                case "error":
-                  setStreamSteps((prev) => [
-                    ...prev,
-                    { id: `error-${Date.now()}`, label: event.error, status: "error" },
-                  ]);
-                  break;
-              }
-            } catch (parseErr) {
-              console.warn("SSE parse error:", parseErr);
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Generation failed:", err);
-      setStreamSteps((prev) => [
-        ...prev,
-        { id: `error-${Date.now()}`, label: "网络错误，请重试", status: "error" },
-      ]);
-    }
-
-    await fetchData();
-    setIsExecuting(false);
+    startGeneration({
+      sessionId: id,
+      sessionTitle: session?.title || "未命名会话",
+      prompt,
+      confirmedAgents: selectedIds,
+    });
   }
 
   function handleCancel() {
