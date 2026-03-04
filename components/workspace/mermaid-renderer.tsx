@@ -6,13 +6,14 @@ import { cn } from "@/lib/utils";
 interface MermaidRendererProps {
   code: string;
   className?: string;
+  onSvgChange?: (svg: string) => void;
 }
 
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 3;
 const ZOOM_STEP = 0.1;
 
-export function MermaidRenderer({ code, className }: MermaidRendererProps) {
+export function MermaidRenderer({ code, className, onSvgChange }: MermaidRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,11 +25,12 @@ export function MermaidRenderer({ code, className }: MermaidRendererProps) {
   const dragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
 
-  // Reset transform when SVG changes
+  // Reset transform and notify parent when SVG changes
   useEffect(() => {
     setScale(1);
     setTranslate({ x: 0, y: 0 });
-  }, [svg]);
+    onSvgChange?.(svg);
+  }, [svg, onSvgChange]);
 
   useEffect(() => {
     import("mermaid").then((m) => {

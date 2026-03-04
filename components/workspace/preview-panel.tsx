@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { MermaidRenderer } from "./mermaid-renderer";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Eye, Code, Save } from "lucide-react";
+import { Eye, Code, Save, Download } from "lucide-react";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import type { Document } from "@/types";
 
