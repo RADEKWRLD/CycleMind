@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, use } from "react";
+import { useEffect, useState, useCallback, useRef, use } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, PanelRightOpen, PanelRightClose } from "lucide-react";
+import gsap from "gsap";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
 import { ChatPanel } from "@/components/workspace/chat-panel";
@@ -24,6 +25,9 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   });
   const [isSending, setIsSending] = useState(false);
   const [streamStatus, setStreamStatus] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(true);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     const [sessionRes, messagesRes, docsRes] = await Promise.all([
@@ -175,6 +179,41 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     setStreamStatus("");
   }
 
+  function togglePreview() {
+    const next = !previewOpen;
+    setPreviewOpen(next);
+
+    if (next) {
+      // Expand preview
+      gsap.to(previewRef.current, {
+        width: "auto",
+        flex: 1,
+        opacity: 1,
+        duration: 0.4,
+        ease: "power2.out",
+      });
+      gsap.to(chatRef.current, {
+        flex: "0 0 420px",
+        duration: 0.4,
+        ease: "power2.out",
+      });
+    } else {
+      // Collapse preview
+      gsap.to(previewRef.current, {
+        width: 0,
+        flex: 0,
+        opacity: 0,
+        duration: 0.4,
+        ease: "power2.inOut",
+      });
+      gsap.to(chatRef.current, {
+        flex: 1,
+        duration: 0.4,
+        ease: "power2.inOut",
+      });
+    }
+  }
+
   async function handleSaveDocument(type: DocTab, content: string) {
     await fetch(`/api/sessions/${id}/documents`, {
       method: "POST",
@@ -191,19 +230,32 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   return (
     <>
       <Header title={session?.title || "加载中..."} />
-      <div className="flex items-center gap-3 px-6 py-3 bg-[var(--card)]/50">
-        <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          返回
+      <div className="shrink-0 flex items-center justify-between px-6 py-3 bg-[var(--card)]/50">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            返回
+          </Button>
+          {session?.description && (
+            <span className="text-sm text-[var(--muted-foreground)] truncate">
+              {session.description}
+            </span>
+          )}
+        </div>
+        <Button variant="ghost" size="sm" onClick={togglePreview}>
+          {previewOpen ? (
+            <PanelRightClose className="h-4 w-4" />
+          ) : (
+            <PanelRightOpen className="h-4 w-4" />
+          )}
         </Button>
-        {session?.description && (
-          <span className="text-sm text-[var(--muted-foreground)] truncate">
-            {session.description}
-          </span>
-        )}
       </div>
-      <div className="flex-1 flex h-[calc(100vh-8rem)]">
-        <div className="w-[420px] min-w-[320px] bg-[var(--background)]">
+      <div className="flex-1 flex min-h-0">
+        <div
+          ref={chatRef}
+          className="overflow-hidden bg-[var(--background)]"
+          style={{ flex: "0 0 420px", minWidth: 320 }}
+        >
           <ChatPanel
             sessionId={id}
             messages={messages}
@@ -212,7 +264,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             streamStatus={streamStatus}
           />
         </div>
-        <div className="flex-1">
+        <div
+          ref={previewRef}
+          className="overflow-hidden"
+          style={{ flex: 1 }}
+        >
           <PreviewPanel
             documents={documents}
             onSaveDocument={handleSaveDocument}

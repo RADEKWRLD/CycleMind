@@ -84,10 +84,10 @@ export function PreviewPanel({ documents, onSaveDocument }: PreviewPanelProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className={`flex-1 ${viewMode === "preview" && activeTab === "mermaid" ? "overflow-hidden" : "overflow-auto p-4"}`}>
         {viewMode === "preview" ? (
           activeTab === "mermaid" ? (
-            <MermaidRenderer code={content} className="flex justify-center" />
+            <MermaidRenderer code={content} className="h-full" />
           ) : content ? (
             <div className="prose prose-sm max-w-none dark:prose-invert">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>

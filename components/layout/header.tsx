@@ -6,7 +6,7 @@ export function Header({ title }: { title?: string }) {
   const { data: session } = useSession();
 
   return (
-    <header className="h-16 bg-[var(--card)]/80 backdrop-blur-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-between px-6 sticky top-0 z-10">
+    <header className="h-16 shrink-0 bg-[var(--card)]/80 backdrop-blur-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-between px-6 z-10">
       <h1 className="text-xl font-bold tracking-tight">{title || "工作台"}</h1>
       <div className="flex items-center gap-4">
         <span className="text-sm text-[var(--muted-foreground)] font-medium">
