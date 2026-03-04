@@ -8,14 +8,17 @@ import { Eye, Code, Save, Download } from "lucide-react";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import type { Document } from "@/types";
 
-type TabKey = "mermaid" | "api_spec" | "arch_design" | "dev_plan";
+type TabKey = "mermaid" | "er" | "api_spec" | "arch_design" | "dev_plan";
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "mermaid", label: "架构图" },
+  { key: "er", label: "ER 图" },
+  { key: "arch_design", label: "需求分析" },
   { key: "api_spec", label: "API 规范" },
-  { key: "arch_design", label: "架构设计" },
   { key: "dev_plan", label: "发展计划" },
 ];
+
+const isMermaidTab = (key: TabKey) => key === "mermaid" || key === "er";
 
 interface PreviewPanelProps {
   documents: Record<string, Document | null>;
@@ -49,7 +52,7 @@ export function PreviewPanel({ documents, onSaveDocument }: PreviewPanelProps) {
   }, []);
 
   function handleDownload() {
-    if (activeTab === "mermaid" && currentSvg) {
+    if (isMermaidTab(activeTab) && currentSvg) {
       const blob = new Blob([currentSvg], { type: "image/svg+xml" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -68,7 +71,7 @@ export function PreviewPanel({ documents, onSaveDocument }: PreviewPanelProps) {
     }
   }
 
-  const canDownload = activeTab === "mermaid" ? !!currentSvg : !!content;
+  const canDownload = isMermaidTab(activeTab) ? !!currentSvg : !!content;
 
   return (
     <div className="flex flex-col h-full">
@@ -119,9 +122,9 @@ export function PreviewPanel({ documents, onSaveDocument }: PreviewPanelProps) {
       </div>
 
       {/* Content */}
-      <div className={`flex-1 ${viewMode === "preview" && activeTab === "mermaid" ? "overflow-hidden" : "overflow-auto p-4"}`}>
+      <div className={`flex-1 ${viewMode === "preview" && isMermaidTab(activeTab) ? "overflow-hidden" : "overflow-auto p-4"}`}>
         {viewMode === "preview" ? (
-          activeTab === "mermaid" ? (
+          isMermaidTab(activeTab) ? (
             <MermaidRenderer code={content} className="h-full" onSvgChange={handleSvgChange} />
           ) : content ? (
             <MarkdownRenderer>{content}</MarkdownRenderer>
@@ -136,7 +139,7 @@ export function PreviewPanel({ documents, onSaveDocument }: PreviewPanelProps) {
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               className="flex-1 font-mono text-sm resize-none"
-              placeholder={activeTab === "mermaid" ? "输入 Mermaid 代码..." : "输入 Markdown 内容..."}
+              placeholder={isMermaidTab(activeTab) ? "输入 Mermaid 代码..." : "输入 Markdown 内容..."}
             />
             <div className="flex justify-end">
               <Button onClick={handleSave} disabled={saving} size="sm">

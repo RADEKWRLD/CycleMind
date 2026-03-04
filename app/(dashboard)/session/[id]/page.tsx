@@ -10,7 +10,7 @@ import { ChatPanel } from "@/components/workspace/chat-panel";
 import { PreviewPanel } from "@/components/workspace/preview-panel";
 import type { Session, Message, Document, StreamStep, AgentToolPart } from "@/types";
 
-type DocTab = "mermaid" | "api_spec" | "arch_design" | "dev_plan";
+type DocTab = "mermaid" | "er" | "api_spec" | "arch_design" | "dev_plan";
 
 
 export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +20,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const [messages, setMessages] = useState<Message[]>([]);
   const [documents, setDocuments] = useState<Record<string, Document | null>>({
     mermaid: null,
+    er: null,
     api_spec: null,
     arch_design: null,
     dev_plan: null,
@@ -50,12 +51,15 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       const data = await docsRes.json();
       const grouped: Record<string, Document | null> = {
         mermaid: null,
+        er: null,
         api_spec: null,
         arch_design: null,
         dev_plan: null,
       };
       for (const doc of data.documents as Document[]) {
-        const key = doc.type;
+        const key = doc.type === "mermaid"
+          ? (doc.diagramType === "er" ? "er" : "mermaid")
+          : doc.type;
         if (!grouped[key] || doc.version > (grouped[key]?.version ?? 0)) {
           grouped[key] = doc;
         }
@@ -70,12 +74,15 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       const data = await docsRes.json();
       const grouped: Record<string, Document | null> = {
         mermaid: null,
+        er: null,
         api_spec: null,
         arch_design: null,
         dev_plan: null,
       };
       for (const doc of data.documents as Document[]) {
-        const key = doc.type;
+        const key = doc.type === "mermaid"
+          ? (doc.diagramType === "er" ? "er" : "mermaid")
+          : doc.type;
         if (!grouped[key] || doc.version > (grouped[key]?.version ?? 0)) {
           grouped[key] = doc;
         }
@@ -251,13 +258,15 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   }
 
   async function handleSaveDocument(type: DocTab, content: string) {
+    const isMermaid = type === "mermaid" || type === "er";
     await fetch(`/api/sessions/${id}/documents`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        type,
+        type: isMermaid ? "mermaid" : type,
         content,
         ...(type === "mermaid" ? { diagramType: "architecture" } : {}),
+        ...(type === "er" ? { diagramType: "er" } : {}),
       }),
     });
     await fetchData();
