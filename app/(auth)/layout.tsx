@@ -4,8 +4,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Left Panel - Brand */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#1A1A1A] flex-col justify-between p-12">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">AI-SDLC</h1>
-          <p className="text-sm text-[#666] mt-1">AI 驱动的软件设计自动化平台</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">CycleMind</h1>
+          <p className="text-sm text-[#666] mt-1">AI-Powered Software Design</p>
         </div>
         <div>
           <p className="text-5xl font-extrabold text-white leading-tight tracking-tight">
@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <span className="text-[#FA5D29]">软件设计流程</span>
           </p>
         </div>
-        <p className="text-xs text-[#666]">&copy; 2026 AI-SDLC</p>
+        <p className="text-xs text-[#666]">&copy; 2026 CycleMind</p>
       </div>
       {/* Right Panel - Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-[var(--background)]">

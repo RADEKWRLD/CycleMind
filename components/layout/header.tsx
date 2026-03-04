@@ -8,7 +8,7 @@ export function Header({ title }: { title?: string }) {
   return (
     <header className="h-16 shrink-0 bg-[var(--card)]/80 backdrop-blur-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-between px-6 z-10">
       <div className="flex items-center gap-3">
-        <img src="/logo-solid.svg" alt="AI-SDLC" className="h-8 w-8" />
+        <img src="/logo-solid.svg" alt="CycleMind" className="h-8 w-8" />
         <h1 className="text-xl font-bold tracking-tight">{title || "工作台"}</h1>
       </div>
       <div className="flex items-center gap-4">

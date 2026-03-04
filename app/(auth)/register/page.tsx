@@ -52,7 +52,7 @@ export default function RegisterPage() {
     <div className="w-full max-w-md">
       {/* Mobile-only logo */}
       <div className="lg:hidden text-center mb-8">
-        <h1 className="text-2xl font-extrabold tracking-tight">AI-SDLC</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">CycleMind</h1>
       </div>
 
       <div className="space-y-2 mb-8">

@@ -6,7 +6,7 @@ export default function HomePage() {
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold tracking-tight">AI-SDLC</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight">CycleMind</h1>
           <div className="flex gap-3 items-center">
             <Link
               href="/login"
@@ -105,7 +105,7 @@ export default function HomePage() {
       <footer className="py-8 px-6 bg-[var(--secondary)]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <span className="text-sm text-[var(--muted-foreground)]">
-            AI-SDLC - AI 驱动的软件设计自动化平台
+            CycleMind - AI-Powered Software Design
           </span>
           <span className="text-sm font-bold text-[var(--primary)]">2026</span>
         </div>
