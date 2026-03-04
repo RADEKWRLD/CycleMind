@@ -138,8 +138,8 @@ export function ChatPanel({ sessionId, messages, onSend, isSending, streamSteps 
               </div>
             </Message>
           )}
+          <ChatContainerScrollAnchor />
         </ChatContainerContent>
-        <ChatContainerScrollAnchor />
 
         {/* Scroll to bottom button */}
         <div className="absolute bottom-20 right-4 z-10">

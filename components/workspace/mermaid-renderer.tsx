@@ -68,26 +68,31 @@ export function MermaidRenderer({ code, className, onSvgChange }: MermaidRendere
     return () => { cancelled = true; };
   }, [code, mermaidLoaded]);
 
-  // Wheel zoom
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  // Wheel zoom — must use native listener with { passive: false } to allow preventDefault
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-    // Cursor position relative to container
-    const cx = e.clientX - rect.left;
-    const cy = e.clientY - rect.top;
+    function handleWheel(e: WheelEvent) {
+      e.preventDefault();
+      const rect = el!.getBoundingClientRect();
 
-    setScale((prev) => {
-      const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev - e.deltaY * 0.001));
-      const ratio = next / prev;
-      // Zoom toward cursor
-      setTranslate((t) => ({
-        x: cx - ratio * (cx - t.x),
-        y: cy - ratio * (cy - t.y),
-      }));
-      return next;
-    });
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+
+      setScale((prev) => {
+        const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev - e.deltaY * 0.001));
+        const ratio = next / prev;
+        setTranslate((t) => ({
+          x: cx - ratio * (cx - t.x),
+          y: cy - ratio * (cy - t.y),
+        }));
+        return next;
+      });
+    }
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
   }, []);
 
   // Pointer drag
@@ -139,7 +144,6 @@ export function MermaidRenderer({ code, className, onSvgChange }: MermaidRendere
       <div
         ref={containerRef}
         className="h-full w-full overflow-hidden cursor-grab active:cursor-grabbing"
-        onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

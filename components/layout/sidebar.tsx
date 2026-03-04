@@ -33,7 +33,7 @@ export function Sidebar() {
           className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#666] hover:bg-[#FA5D29]/10 hover:text-[#FA5D29] transition-all duration-200 w-full"
         >
           <Plus className="h-4 w-4" />
-          新建项目
+          工作台
         </Link>
       </div>
 
