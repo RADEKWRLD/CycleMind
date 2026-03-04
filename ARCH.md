@@ -1,6 +1,6 @@
 # AI-SDLC：智能软件生命周期辅助系统
 
-## Architecture Design & Requirement Specification (v1.0)
+## Architecture Design & Requirement Specification (v2.0 - 已实现)
 
 ---
 
@@ -38,35 +38,48 @@
 ## 2.1 总体架构图
 
 ```
-┌─────────────────────────────┐
-│           Frontend          │
-│  Next.js + Mermaid Renderer │
-└──────────────┬──────────────┘
+┌──────────────────────────────────┐
+│          Frontend (Next.js 16)   │
+│  Tailwind CSS + Mermaid.js       │
+│  Zustand 状态管理                │
+└──────────────┬───────────────────┘
                │
                ▼
-┌─────────────────────────────┐
-│        Backend API Layer    │
-│   - Session 管理            │
-│   - Diagram 生成接口        │
-│   - 版本管理                │
-└──────────────┬──────────────┘
+┌──────────────────────────────────┐
+│     Auth Layer (Auth.js v5)      │
+│  邮箱密码 + GitHub OAuth + JWT   │
+└──────────────┬───────────────────┘
                │
                ▼
-┌─────────────────────────────┐
-│      AI Processing Layer    │
-│  - 需求结构化解析           │
-│  - Mermaid 生成             │
-│  - 版本 Diff 分析           │
-└──────────────┬──────────────┘
+┌──────────────────────────────────┐
+│     Backend API (Route Handlers) │
+│  - Sessions CRUD                 │
+│  - Documents 版本管理            │
+│  - Messages 聊天记录             │
+│  - User 资料 (user.md)           │
+│  - Generate 生成入口             │
+└──────────────┬───────────────────┘
                │
                ▼
-┌─────────────────────────────┐
-│        Database (Neon)      │
-│  - Sessions                 │
-│  - Diagrams                 │
-│  - Messages                 │
-│  - Versions                 │
-└─────────────────────────────┘
+┌──────────────────────────────────┐
+│   AI Multi-Agent Layer (DeepSeek)│
+│  Orchestrator → 编排决策         │
+│  ├→ RequirementAgent (需求解析)  │
+│  ├→ DesignAgent (架构图生成)     │
+│  ├→ ERAgent (ER 图生成)          │
+│  ├→ APIAgent (接口规范)          │
+│  └→ PlanAgent (发展计划)         │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│      Database (Neon PostgreSQL)  │
+│  Drizzle ORM                     │
+│  - users (含 user_md)            │
+│  - sessions                      │
+│  - documents (版本追踪)          │
+│  - messages                      │
+└──────────────────────────────────┘
 ```
 
 ---
@@ -77,16 +90,18 @@
 
 技术：
 
-* Next.js
-* Mermaid 渲染
-* 状态管理（Zustand / Redux）
+* Next.js 16 (App Router, TypeScript)
+* Tailwind CSS v4 + shadcn/ui 组件
+* Mermaid.js 客户端渲染 (dynamic import, ssr: false)
+* Zustand 状态管理
+* react-resizable-panels 分栏布局
 
 职责：
 
-* 需求输入界面
-* 实时图展示
-* 版本对比视图
-* 会话管理
+* 落地页、登录/注册
+* Dashboard (项目列表)
+* Session 工作区 (聊天 + Mermaid 预览 + Markdown 编辑)
+* 用户资料 (user.md 编辑器)
 
 ---
 
@@ -99,80 +114,92 @@
 * 控制生成流程
 * 调用 AI 接口
 
-核心接口：
+核心接口（已实现）：
 
-* POST /session
-* POST /generate-diagram
-* GET /session/{id}
-* GET /session/{id}/versions
+* GET/POST /api/sessions — 会话列表 / 创建
+* GET/PATCH/DELETE /api/sessions/[id] — 会话详情
+* GET/POST /api/sessions/[id]/documents — 文档版本管理
+* GET/POST /api/sessions/[id]/messages — 聊天记录
+* POST /api/generate — AI 多 Agent 生成入口
+* GET/PATCH /api/user — 用户资料 / user.md
+* POST /api/register — 邮箱密码注册
+* GET/POST /api/auth/[...nextauth] — Auth.js 认证
 
 ---
 
-### 3️⃣ AI 处理层（LLM Layer）
+### 3️⃣ AI 处理层（Multi-Agent Layer）
 
-职责：
+模型：DeepSeek API（兼容 OpenAI SDK，价格极低）
 
-* 需求结构化
-* Mermaid 代码生成
-* 图结构优化
-* 版本差异分析
-
-工作流程：
+多 Sub-Agent 架构（已实现）：
 
 ```
-用户需求
-   ↓
-结构化 JSON 输出
-   ↓
-Mermaid 代码生成
-   ↓
-存储数据库
+用户输入需求
+    ↓
+Orchestrator（编排器）— 分析意图，决定调用哪些 Agent
+    ├→ RequirementAgent: 需求结构化解析 → Markdown
+    ├→ DesignAgent: 系统架构图 (graph TD) → Mermaid
+    ├→ ERAgent: ER 图 (erDiagram) → Mermaid
+    ├→ APIAgent: 接口规范文档 → Markdown
+    └→ PlanAgent: 发展计划 → Markdown
+    ↓
+并行执行 → 结果聚合 → 存入 documents 表（版本追踪）
 ```
+
+每个 Agent 拥有专用 system prompt，Orchestrator 根据用户意图智能决策调用组合。
 
 ---
 
 ### 4️⃣ 数据层（Persistence Layer）
 
-数据库：Neon PostgreSQL
+数据库：Neon PostgreSQL + Drizzle ORM
 
-核心设计：
+**users**
 
-## sessions
+| 字段           | 类型      | 说明                     |
+| -------------- | --------- | ------------------------ |
+| id             | uuid      | 主键                     |
+| name           | text      | 用户名                   |
+| email          | text      | 邮箱 (唯一)              |
+| password\_hash | text      | 密码哈希                 |
+| user\_md       | text      | 用户个人文档 (user.md)   |
+| preferences    | jsonb     | 偏好设置                 |
+| created\_at    | timestamp | 创建时间                 |
 
+**sessions**
 
-| 字段        | 类型      | 说明     |
-| ----------- | --------- | -------- |
-| id          | uuid      | 主键     |
-| title       | text      | 项目标题 |
-| description | text      | 初始需求 |
-| created\_at | timestamp | 创建时间 |
+| 字段        | 类型      | 说明                           |
+| ----------- | --------- | ------------------------------ |
+| id          | uuid      | 主键                           |
+| user\_id    | uuid      | 外键 → users                   |
+| title       | text      | 项目标题                       |
+| description | text      | 初始需求                       |
+| status      | enum      | active / archived / completed  |
+| created\_at | timestamp | 创建时间                       |
 
----
+**documents** (统一文档表，版本 append-only)
 
-## diagrams
+| 字段               | 类型      | 说明                                        |
+| ------------------ | --------- | ------------------------------------------- |
+| id                 | uuid      | 主键                                        |
+| session\_id        | uuid      | 外键 → sessions                             |
+| type               | enum      | mermaid / api\_spec / arch\_design / dev\_plan |
+| diagram\_type      | enum      | architecture / er / flow / sequence (仅 mermaid) |
+| content            | text      | Mermaid 代码或 Markdown 内容                |
+| version            | int       | 版本号（只增不减）                          |
+| parent\_version\_id| uuid      | 上一版本 ID                                 |
+| created\_at        | timestamp | 创建时间                                    |
 
+**messages**
 
-| 字段          | 类型      | 说明                     |
-| ------------- | --------- | ------------------------ |
-| id            | uuid      | 主键                     |
-| session\_id   | uuid      | 外键                     |
-| mermaid\_code | text      | Mermaid 文本             |
-| diagram\_type | text      | architecture / er / flow |
-| version       | int       | 版本号                   |
-| created\_at   | timestamp | 创建时间                 |
-
----
-
-## messages（可选）
-
-
-| 字段        | 类型      | 说明          |
-| ----------- | --------- | ------------- |
-| id          | uuid      | 主键          |
-| session\_id | uuid      | 会话          |
-| role        | text      | user / system |
-| content     | text      | 对话内容      |
-| created\_at | timestamp | 时间          |
+| 字段        | 类型      | 说明                   |
+| ----------- | --------- | ---------------------- |
+| id          | uuid      | 主键                   |
+| session\_id | uuid      | 外键 → sessions        |
+| role        | enum      | user / assistant / system |
+| content     | text      | 对话内容               |
+| metadata    | jsonb     | 元数据（生成的 agent 等）|
+| created\_at | timestamp | 时间                   |
 
 ---
 
@@ -273,17 +300,18 @@ erDiagram
 
 ---
 
-## 5.3 是否需要多 Agent？
+## 5.3 多 Agent 架构（已实现）
 
-初期版本：
+已实现 5 个专用 Agent + 1 个编排器：
 
-* 单模型即可
+* **Orchestrator**: 分析用户意图，决定调用哪些 Agent
+* **RequirementAgent**: 需求结构化解析
+* **DesignAgent**: 系统架构图 (Mermaid graph TD) 生成
+* **ERAgent**: ER 图 (Mermaid erDiagram) 生成
+* **APIAgent**: RESTful API 接口规范文档生成
+* **PlanAgent**: 发展计划文档生成
 
-升级版本：
-
-* RequirementAgent
-* DesignAgent
-* ERAgent
+使用 DeepSeek API（兼容 OpenAI SDK），支持并行调用多个 Agent。
 
 ---
 
