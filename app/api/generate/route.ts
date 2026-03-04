@@ -51,35 +51,53 @@ export async function POST(req: Request) {
         // Step 3: Run agents — fire all, stream as each completes
         const savedDocs: string[] = [];
 
+        const agentLabels: Record<string, string> = {
+          requirement: "需求分析",
+          design: "架构图",
+          er: "ER 图",
+          api: "API 规范",
+          plan: "发展计划",
+        };
+
         const agentTasks: { agent: string; promise: Promise<string> }[] = [];
 
         for (const agent of agentsToRun) {
+          let agentInput: Record<string, unknown> = { prompt };
           switch (agent) {
             case "requirement":
+              if (existingApiSpec?.content) agentInput.existingContext = existingApiSpec.content;
+              send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "requirement",
                 promise: runRequirementAgent(prompt, existingApiSpec?.content),
               });
               break;
             case "design":
+              if (existingMermaid?.content) agentInput.existingContext = existingMermaid.content;
+              send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "design",
                 promise: runDesignAgent(prompt, existingMermaid?.content),
               });
               break;
             case "er":
+              if (existingMermaid?.content) agentInput.existingContext = existingMermaid.content;
+              send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "er",
                 promise: runERAgent(prompt, existingMermaid?.content),
               });
               break;
             case "api":
+              if (existingApiSpec?.content) agentInput.existingContext = existingApiSpec.content;
+              send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "api",
                 promise: runAPIAgent(prompt, existingApiSpec?.content),
               });
               break;
             case "plan":
+              send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "plan",
                 promise: runPlanAgent(prompt),
@@ -91,19 +109,11 @@ export async function POST(req: Request) {
         // Start all agents, stream progress as each one finishes
         send({ type: "status", message: `正在并行运行 ${agentTasks.length} 个 Agent...` });
 
-        const agentLabels: Record<string, string> = {
-          requirement: "需求分析",
-          design: "架构图",
-          er: "ER 图",
-          api: "API 规范",
-          plan: "发展计划",
-        };
-
         // Use Promise.allSettled-like pattern but stream as each resolves
         const pending = agentTasks.map(({ agent, promise }) =>
           promise
             .then(async (result) => {
-              send({ type: "agent_done", agent, label: agentLabels[agent] });
+              send({ type: "agent_output", agent, label: agentLabels[agent], output: { content: result } });
 
               // Save document immediately
               switch (agent) {
@@ -159,7 +169,7 @@ export async function POST(req: Request) {
               send({ type: "doc_saved", agent, label: agentLabels[agent] });
             })
             .catch((err) => {
-              send({ type: "agent_error", agent, error: String(err) });
+              send({ type: "agent_error", agent, label: agentLabels[agent], errorText: String(err) });
             })
         );
 

@@ -14,6 +14,7 @@ export const registerSchema = z.object({
 export const createSessionSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(5000).optional(),
+  templateId: z.uuid().optional(),
 });
 
 export const updateSessionSchema = z.object({

@@ -21,7 +21,8 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "@/components/ui/prompt-input";
-import type { Message as MessageType, StreamStep } from "@/types";
+import { Tool } from "@/components/ui/tool";
+import type { Message as MessageType, StreamStep, AgentToolPart } from "@/types";
 
 interface ChatPanelProps {
   sessionId: string;
@@ -29,9 +30,10 @@ interface ChatPanelProps {
   onSend: (content: string) => Promise<void>;
   isSending: boolean;
   streamSteps?: StreamStep[];
+  agentToolParts?: Map<string, AgentToolPart>;
 }
 
-export function ChatPanel({ sessionId, messages, onSend, isSending, streamSteps = [] }: ChatPanelProps) {
+export function ChatPanel({ sessionId, messages, onSend, isSending, streamSteps = [], agentToolParts = new Map() }: ChatPanelProps) {
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -95,43 +97,41 @@ export function ChatPanel({ sessionId, messages, onSend, isSending, streamSteps 
             </Message>
           ))}
 
-          {/* Tool call timeline */}
+          {/* Agent thinking chain */}
           {isSending && (
             <Message className="justify-start">
-              <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3 min-w-[200px]">
-                {streamSteps.length === 0 ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="size-3.5 animate-spin text-primary" />
-                    分析中...
+              <div className="min-w-70 max-w-[95%]">
+                {streamSteps.length === 0 && agentToolParts.size === 0 ? (
+                  <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="size-3.5 animate-spin text-primary" />
+                      分析中...
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {streamSteps.map((step) => (
                       <div
                         key={step.id}
-                        className="flex items-center gap-2 text-sm"
+                        className="flex items-center gap-2 text-sm px-1 py-0.5"
                       >
-                        {step.status === "running" && (
-                          <Loader2 className="size-3.5 animate-spin text-primary shrink-0" />
-                        )}
                         {step.status === "done" && (
                           <CheckCircle2 className="size-3.5 text-green-500 shrink-0" />
                         )}
                         {step.status === "error" && (
                           <XCircle className="size-3.5 text-destructive shrink-0" />
                         )}
-                        <span
-                          className={
-                            step.status === "running"
-                              ? "text-foreground"
-                              : step.status === "error"
-                                ? "text-destructive"
-                                : "text-muted-foreground"
-                          }
-                        >
+                        <span className={step.status === "error" ? "text-destructive" : "text-muted-foreground"}>
                           {step.label}
                         </span>
                       </div>
+                    ))}
+                    {Array.from(agentToolParts.values()).map((toolPart) => (
+                      <Tool
+                        key={toolPart.toolCallId}
+                        toolPart={toolPart}
+                        defaultOpen={false}
+                      />
                     ))}
                   </div>
                 )}

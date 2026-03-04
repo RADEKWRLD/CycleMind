@@ -8,20 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
 import { ChatPanel } from "@/components/workspace/chat-panel";
 import { PreviewPanel } from "@/components/workspace/preview-panel";
-import type { Session, Message, Document, StreamStep } from "@/types";
+import type { Session, Message, Document, StreamStep, AgentToolPart } from "@/types";
 
 type DocTab = "mermaid" | "api_spec" | "arch_design" | "dev_plan";
 
-const AGENT_LABELS: Record<string, string> = {
-  requirement: "需求分析",
-  design: "架构设计",
-  er: "ER 图",
-  api: "API 规范",
-  plan: "发展计划",
-};
-function agentLabel(agent: string) {
-  return AGENT_LABELS[agent] || agent;
-}
 
 export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -36,6 +26,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   });
   const [isSending, setIsSending] = useState(false);
   const [streamSteps, setStreamSteps] = useState<StreamStep[]>([]);
+  const [agentToolParts, setAgentToolParts] = useState<Map<string, AgentToolPart>>(new Map());
   const [previewOpen, setPreviewOpen] = useState(true);
   const previewRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -100,6 +91,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   async function handleSend(content: string) {
     setIsSending(true);
     setStreamSteps([]);
+    setAgentToolParts(new Map());
 
     // Optimistic: show user message immediately
     const optimisticMsg: Message = {
@@ -156,41 +148,50 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
                     { id: `status-${Date.now()}`, label: event.message, status: "done" },
                   ]);
                   break;
-                case "agents":
-                  // Add each agent as a "running" step
-                  setStreamSteps((prev) => [
-                    ...prev,
-                    ...event.agents.map((a: string) => ({
-                      id: a,
-                      label: agentLabel(a),
-                      status: "running" as const,
-                    })),
-                  ]);
+                case "agent_start":
+                  setAgentToolParts((prev) => {
+                    const next = new Map(prev);
+                    next.set(event.agent, {
+                      type: event.label,
+                      state: "input-streaming",
+                      input: event.input,
+                      toolCallId: event.agent,
+                    });
+                    return next;
+                  });
                   break;
-                case "agent_done":
-                  setStreamSteps((prev) =>
-                    prev.map((s) =>
-                      s.id === event.agent ? { ...s, status: "done" as const } : s
-                    )
-                  );
+                case "agent_output":
+                  setAgentToolParts((prev) => {
+                    const next = new Map(prev);
+                    const existing = next.get(event.agent);
+                    if (existing) {
+                      next.set(event.agent, {
+                        ...existing,
+                        state: "output-available",
+                        output: event.output,
+                      });
+                    }
+                    return next;
+                  });
                   break;
                 case "doc_saved":
                   fetchDocuments();
                   break;
                 case "agent_error":
-                  setStreamSteps((prev) =>
-                    prev.map((s) =>
-                      s.id === event.agent
-                        ? { ...s, status: "error" as const, label: `${s.label} - ${event.error}` }
-                        : s
-                    )
-                  );
+                  setAgentToolParts((prev) => {
+                    const next = new Map(prev);
+                    const existing = next.get(event.agent);
+                    if (existing) {
+                      next.set(event.agent, {
+                        ...existing,
+                        state: "output-error",
+                        errorText: event.errorText,
+                      });
+                    }
+                    return next;
+                  });
                   break;
                 case "done":
-                  // Mark all remaining running steps as done
-                  setStreamSteps((prev) =>
-                    prev.map((s) => (s.status === "running" ? { ...s, status: "done" as const } : s))
-                  );
                   break;
                 case "error":
                   setStreamSteps((prev) => [
@@ -297,6 +298,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             onSend={handleSend}
             isSending={isSending}
             streamSteps={streamSteps}
+            agentToolParts={agentToolParts}
           />
         </div>
         <div

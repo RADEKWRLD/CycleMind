@@ -10,6 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { SidebarRecent } from "./sidebar-recent";
+import { SidebarTemplates } from "./sidebar-templates";
 
 export function Sidebar() {
   const { data: session } = useSession();
@@ -26,8 +28,8 @@ export function Sidebar() {
         </Link>
       </div>
 
-      {/* New Project */}
-      <div className="px-3 py-2">
+      {/* Nav links */}
+      <div className="px-3 py-2 space-y-0.5">
         <Link
           href="/dashboard"
           className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#666] hover:bg-[#FA5D29]/10 hover:text-[#FA5D29] transition-all duration-200 w-full"
@@ -35,10 +37,13 @@ export function Sidebar() {
           <Plus className="h-4 w-4" />
           工作台
         </Link>
+        <SidebarTemplates />
       </div>
 
-      {/* Spacer */}
-      <div className="flex-1" />
+      {/* Recent projects */}
+      <div className="flex-1 overflow-y-auto">
+        <SidebarRecent />
+      </div>
 
       {/* User menu */}
       <div className="p-3 border-t border-[#F0DDD4]">

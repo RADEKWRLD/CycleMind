@@ -7,6 +7,7 @@ import {
   jsonb,
   pgEnum,
   primaryKey,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -132,6 +133,16 @@ export const messages = pgTable("messages", {
   role: messageRoleEnum("role").notNull(),
   content: text("content").notNull(),
   metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const templates = pgTable("templates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon").default("Globe"),
+  prompt: text("prompt").notNull(),
+  isBuiltin: boolean("is_builtin").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
