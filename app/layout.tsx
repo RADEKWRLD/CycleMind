@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter_Tight } from "next/font/google";
+import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+const funnelDisplay = localFont({
+  src: "../public/Funnel_Display/FunnelDisplay-VariableFont_wght.ttf",
+  variable: "--font-funnel-display",
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body
-        className={`${interTight.variable} ${geistMono.variable} antialiased`}
+        className={`${funnelDisplay.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>

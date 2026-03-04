@@ -61,7 +61,7 @@
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --font-sans: var(--font-inter-tight);
+  --font-sans: var(--font-funnel-display);
   --font-mono: var(--font-geist-mono);
 }
 
