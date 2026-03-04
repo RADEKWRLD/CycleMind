@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { Plus, User, LogOut, Settings } from "lucide-react";
+import { Plus, User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -62,17 +62,16 @@ export function Sidebar() {
               {session?.user?.name || session?.user?.email || "用户"}
             </span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56">
-            <DropdownMenuItem asChild>
-              <Link href="/profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                个人资料
-              </Link>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuItem
+              onClick={() => (window.location.href = "/profile")}
+            >
+              <User className="h-4 w-4" />
+              个人资料
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex items-center gap-2"
             >
               <LogOut className="h-4 w-4" />
               退出登录
