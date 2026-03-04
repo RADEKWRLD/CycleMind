@@ -11,15 +11,16 @@ interface ChatPanelProps {
   messages: Message[];
   onSend: (content: string) => Promise<void>;
   isSending: boolean;
+  streamStatus?: string;
 }
 
-export function ChatPanel({ sessionId, messages, onSend, isSending }: ChatPanelProps) {
+export function ChatPanel({ sessionId, messages, onSend, isSending, streamStatus }: ChatPanelProps) {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, streamStatus]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,10 +64,19 @@ export function ChatPanel({ sessionId, messages, onSend, isSending }: ChatPanelP
         ))}
         {isSending && (
           <div className="flex justify-start">
-            <div className="bg-[var(--secondary)] rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
-              <span className="h-2 w-2 rounded-full bg-[var(--muted-foreground)] animate-bounce [animation-delay:0ms]" />
-              <span className="h-2 w-2 rounded-full bg-[var(--muted-foreground)] animate-bounce [animation-delay:150ms]" />
-              <span className="h-2 w-2 rounded-full bg-[var(--muted-foreground)] animate-bounce [animation-delay:300ms]" />
+            <div className="bg-[var(--secondary)] rounded-2xl rounded-bl-md px-4 py-3">
+              {streamStatus ? (
+                <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+                  <span className="h-2 w-2 rounded-full bg-[var(--primary)] animate-pulse" />
+                  {streamStatus}
+                </div>
+              ) : (
+                <div className="flex gap-1">
+                  <span className="h-2 w-2 rounded-full bg-[var(--muted-foreground)] animate-bounce [animation-delay:0ms]" />
+                  <span className="h-2 w-2 rounded-full bg-[var(--muted-foreground)] animate-bounce [animation-delay:150ms]" />
+                  <span className="h-2 w-2 rounded-full bg-[var(--muted-foreground)] animate-bounce [animation-delay:300ms]" />
+                </div>
+              )}
             </div>
           </div>
         )}

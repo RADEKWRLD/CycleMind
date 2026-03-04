@@ -23,6 +23,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     dev_plan: null,
   });
   const [isSending, setIsSending] = useState(false);
+  const [streamStatus, setStreamStatus] = useState("");
 
   const fetchData = useCallback(async () => {
     const [sessionRes, messagesRes, docsRes] = await Promise.all([
@@ -41,7 +42,26 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     }
     if (docsRes.ok) {
       const data = await docsRes.json();
-      // Group by type, pick latest version of each
+      const grouped: Record<string, Document | null> = {
+        mermaid: null,
+        api_spec: null,
+        arch_design: null,
+        dev_plan: null,
+      };
+      for (const doc of data.documents as Document[]) {
+        const key = doc.type;
+        if (!grouped[key] || doc.version > (grouped[key]?.version ?? 0)) {
+          grouped[key] = doc;
+        }
+      }
+      setDocuments(grouped);
+    }
+  }, [id]);
+
+  const fetchDocuments = useCallback(async () => {
+    const docsRes = await fetch(`/api/sessions/${id}/documents`);
+    if (docsRes.ok) {
+      const data = await docsRes.json();
       const grouped: Record<string, Document | null> = {
         mermaid: null,
         api_spec: null,
@@ -64,36 +84,85 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
 
   async function handleSend(content: string) {
     setIsSending(true);
+    setStreamStatus("");
 
-    // Save user message
+    // Optimistic: show user message immediately
+    const optimisticMsg: Message = {
+      id: `temp-${Date.now()}`,
+      sessionId: id,
+      role: "user",
+      content,
+      metadata: null,
+      createdAt: new Date(),
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+
+    // Save user message to DB
     await fetch(`/api/sessions/${id}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content }),
     });
 
-    // Call AI generation
+    // Call AI generation via SSE
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: id,
-          prompt: content,
-          generateTypes: ["mermaid", "api_spec", "arch_design", "dev_plan"],
-          diagramType: "architecture",
-        }),
+        body: JSON.stringify({ sessionId: id, prompt: content }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        // Save AI response as message
-        if (data.summary) {
-          await fetch(`/api/sessions/${id}/messages`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: data.summary }),
-          });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            const dataLine = line.replace(/^data: /, "");
+            if (!dataLine) continue;
+            try {
+              const event = JSON.parse(dataLine);
+              switch (event.type) {
+                case "status":
+                  setStreamStatus(event.message);
+                  break;
+                case "agents":
+                  setStreamStatus(`调用 Agent: ${event.agents.join(", ")}`);
+                  break;
+                case "agent_done":
+                  setStreamStatus(`${event.label} 生成完成`);
+                  break;
+                case "doc_saved":
+                  // Refresh documents as each one is saved
+                  fetchDocuments();
+                  setStreamStatus(`${event.label} 已保存`);
+                  break;
+                case "agent_error":
+                  setStreamStatus(`${event.agent} 失败: ${event.error}`);
+                  break;
+                case "done":
+                  setStreamStatus("");
+                  break;
+                case "error":
+                  setStreamStatus(`错误: ${event.error}`);
+                  break;
+              }
+            } catch {
+              // ignore parse errors
+            }
+          }
         }
       }
     } catch (err) {
@@ -103,6 +172,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     // Refresh all data
     await fetchData();
     setIsSending(false);
+    setStreamStatus("");
   }
 
   async function handleSaveDocument(type: DocTab, content: string) {
@@ -139,6 +209,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             messages={messages}
             onSend={handleSend}
             isSending={isSending}
+            streamStatus={streamStatus}
           />
         </div>
         <div className="flex-1">
