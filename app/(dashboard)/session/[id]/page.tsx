@@ -181,15 +181,14 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       console.error("Chat failed:", err);
     }
 
-    // Done chatting — refresh messages from DB
-    setStreamingText("");
-    setIsChatting(false);
-
+    // Refresh messages from DB first, then hide streaming bubble
     const messagesRes = await fetch(`/api/sessions/${id}/messages`);
     if (messagesRes.ok) {
       const data = await messagesRes.json();
       setMessages(data.messages);
     }
+    setStreamingText("");
+    setIsChatting(false);
 
     // If agent says ready, auto-trigger orchestration with full context
     if (readyToGenerate) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSessionById } from "@/lib/db/queries/sessions";
 import { getSessionMessages, createMessage } from "@/lib/db/queries/messages";
+import { getUserById } from "@/lib/db/queries/users";
 import { runConversationAgent } from "@/lib/ai/agents/conversation-agent";
 
 const READY_MARKER = "[READY]";
@@ -41,8 +42,12 @@ export async function POST(
   // Save user message before calling AI
   await createMessage({ sessionId: id, role: "user", content });
 
-  // Fetch conversation history (DESC → reverse for chronological)
-  const rawMessages = await getSessionMessages(id, 40);
+  // Fetch user context and conversation history in parallel
+  const [user, rawMessages] = await Promise.all([
+    getUserById(session.user.id),
+    getSessionMessages(id, 40),
+  ]);
+  const userContext = user?.userMd || undefined;
   const history = rawMessages
     .reverse()
     .filter((m) => m.role === "user" || m.role === "assistant")
@@ -59,7 +64,7 @@ export async function POST(
       let accumulated = "";
 
       try {
-        for await (const token of runConversationAgent(history)) {
+        for await (const token of runConversationAgent(history, userContext)) {
           accumulated += token;
           send({ type: "token", token });
         }

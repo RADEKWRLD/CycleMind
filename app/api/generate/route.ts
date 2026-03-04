@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getSessionById } from "@/lib/db/queries/sessions";
 import { getLatestDocument, createDocument } from "@/lib/db/queries/documents";
 import { createMessage } from "@/lib/db/queries/messages";
+import { getUserById } from "@/lib/db/queries/users";
 import { orchestrate } from "@/lib/ai/agents/orchestrator";
 import { runRequirementAgent } from "@/lib/ai/agents/requirement-agent";
 import { runDesignAgent } from "@/lib/ai/agents/design-agent";
@@ -40,10 +41,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const sessionData = await getSessionById(sessionId);
+  const [sessionData, user] = await Promise.all([
+    getSessionById(sessionId),
+    getUserById(session.user.id),
+  ]);
   if (!sessionData || sessionData.userId !== session.user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  const fullPrompt = user?.userMd
+    ? `${prompt}\n\n[用户背景信息]\n${user.userMd}`
+    : prompt;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -62,7 +70,7 @@ export async function POST(req: Request) {
           send({ type: "status", message: "开始执行已确认的 Agent..." });
         } else {
           send({ type: "status", message: "正在分析需求，决定调用哪些 Agent..." });
-          agentsToRun = await orchestrate(prompt);
+          agentsToRun = await orchestrate(fullPrompt);
         }
         send({ type: "agents", agents: agentsToRun });
 
@@ -83,14 +91,14 @@ export async function POST(req: Request) {
         const agentTasks: { agent: AgentType; promise: Promise<string> }[] = [];
 
         for (const agent of agentsToRun) {
-          let agentInput: Record<string, unknown> = { prompt };
+          let agentInput: Record<string, unknown> = { prompt: fullPrompt };
           switch (agent) {
             case "requirement":
               if (existingApiSpec?.content) agentInput.existingContext = existingApiSpec.content;
               send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "requirement",
-                promise: runRequirementAgent(prompt, existingApiSpec?.content),
+                promise: runRequirementAgent(fullPrompt, existingApiSpec?.content),
               });
               break;
             case "design":
@@ -98,7 +106,7 @@ export async function POST(req: Request) {
               send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "design",
-                promise: runDesignAgent(prompt, existingMermaid?.content),
+                promise: runDesignAgent(fullPrompt, existingMermaid?.content),
               });
               break;
             case "er":
@@ -106,7 +114,7 @@ export async function POST(req: Request) {
               send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "er",
-                promise: runERAgent(prompt, existingMermaid?.content),
+                promise: runERAgent(fullPrompt, existingMermaid?.content),
               });
               break;
             case "api":
@@ -114,14 +122,14 @@ export async function POST(req: Request) {
               send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "api",
-                promise: runAPIAgent(prompt, existingApiSpec?.content),
+                promise: runAPIAgent(fullPrompt, existingApiSpec?.content),
               });
               break;
             case "plan":
               send({ type: "agent_start", agent, label: agentLabels[agent], input: agentInput });
               agentTasks.push({
                 agent: "plan",
-                promise: runPlanAgent(prompt),
+                promise: runPlanAgent(fullPrompt),
               });
               break;
           }

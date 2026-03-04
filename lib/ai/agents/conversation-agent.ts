@@ -16,7 +16,8 @@ const MAX_CONTENT_LENGTH = 4000;
  * Yields token chunks; caller detects [READY] in accumulated text.
  */
 export async function* runConversationAgent(
-  history: ConversationMessage[]
+  history: ConversationMessage[],
+  userContext?: string,
 ): AsyncGenerator<string> {
   const safeHistory = history
     .slice(-MAX_HISTORY_MESSAGES)
@@ -24,6 +25,10 @@ export async function* runConversationAgent(
       role: m.role,
       content: m.content.slice(0, MAX_CONTENT_LENGTH),
     }));
+
+  const systemPrompt = userContext
+    ? `${CONVERSATION_AGENT_PROMPT}\n\n---\n以下是用户的个人信息文档 (user.md)，请参考其中的偏好和约定：\n${userContext.slice(0, 4000)}`
+    : CONVERSATION_AGENT_PROMPT;
 
   const response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
@@ -34,7 +39,7 @@ export async function* runConversationAgent(
     body: JSON.stringify({
       model: AI_MODEL,
       messages: [
-        { role: "system", content: CONVERSATION_AGENT_PROMPT },
+        { role: "system", content: systemPrompt },
         ...safeHistory,
       ],
       temperature: 0.7,
