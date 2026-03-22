@@ -19,12 +19,12 @@ export function Sidebar() {
   const { data: session } = useSession();
 
   return (
-    <aside className="w-64 bg-[#FFF5F0] flex flex-col h-screen sticky top-0">
+    <aside className="w-64 bg-sidebar flex flex-col h-screen sticky top-0">
       {/* Brand */}
       <div className="p-5 pb-3">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <img src="/logo-solid.svg" alt="CycleMind" className="h-7 w-7" />
-          <span className="text-lg font-extrabold tracking-tight text-[#1A1A1A]">
+          <span className="text-lg font-extrabold tracking-tight text-foreground">
             CycleMind
           </span>
         </Link>
@@ -34,7 +34,7 @@ export function Sidebar() {
       <div className="px-3 py-2 space-y-0.5">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#666] hover:bg-[#FA5D29]/10 hover:text-[#FA5D29] transition-all duration-200 w-full"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200 w-full"
         >
           <Plus className="h-4 w-4" />
           工作台
@@ -48,9 +48,9 @@ export function Sidebar() {
       </div>
 
       {/* User menu */}
-      <div className="p-3 border-t border-[#F0DDD4]">
+      <div className="p-3 border-t border-sidebar-border">
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#666] hover:bg-[#FA5D29]/10 hover:text-[#FA5D29] w-full transition-all duration-200 outline-none">
+          <DropdownMenuTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary w-full transition-all duration-200 outline-none">
             {session?.user?.image ? (
               <img
                 src={session.user.image}
@@ -58,7 +58,7 @@ export function Sidebar() {
                 className="h-7 w-7 rounded-full"
               />
             ) : (
-              <div className="h-7 w-7 rounded-full bg-[var(--primary)] flex items-center justify-center text-white text-xs font-bold shrink-0">
+              <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
                 {(session?.user?.name || session?.user?.email || "U")[0].toUpperCase()}
               </div>
             )}

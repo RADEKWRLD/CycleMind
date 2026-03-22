@@ -17,8 +17,8 @@ function SidebarSessionItem({ session, isActive }: { session: Session; isActive:
       href={`/session/${session.id}`}
       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 w-full truncate ${
         isActive
-          ? "bg-[#FA5D29]/15 text-[#FA5D29] font-medium"
-          : "text-[#666] hover:bg-[#FA5D29]/10 hover:text-[#FA5D29]"
+          ? "bg-primary/15 text-primary font-medium"
+          : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
       }`}
     >
       <span
@@ -26,8 +26,8 @@ function SidebarSessionItem({ session, isActive }: { session: Session; isActive:
           isGenerating
             ? "bg-green-500 animate-pulse"
             : isActive
-              ? "bg-[#FA5D29]"
-              : "bg-[#CCC]"
+              ? "bg-primary"
+              : "bg-muted-foreground/40"
         }`}
       />
       <span className="truncate">{session.title}</span>
@@ -56,14 +56,14 @@ export function SidebarRecent() {
   if (loading) {
     return (
       <div className="px-3 py-2">
-        <p className="px-3 py-1 text-xs font-medium text-[#999] uppercase tracking-wider">
+        <p className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
           最近项目
         </p>
         <div className="space-y-1 mt-1">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-8 rounded-lg bg-[#FA5D29]/5 animate-pulse mx-1"
+              className="h-8 rounded-lg bg-primary/5 animate-pulse mx-1"
             />
           ))}
         </div>
@@ -75,7 +75,7 @@ export function SidebarRecent() {
 
   return (
     <div className="px-3 py-2">
-      <p className="px-3 py-1 text-xs font-medium text-[#999] uppercase tracking-wider">
+      <p className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
         最近项目
       </p>
       <div className="space-y-0.5 mt-1">
@@ -89,7 +89,7 @@ export function SidebarRecent() {
       </div>
       <Link
         href="/dashboard"
-        className="flex items-center gap-1 px-3 py-1.5 mt-1 text-xs text-[#999] hover:text-[#FA5D29] transition-colors"
+        className="flex items-center gap-1 px-3 py-1.5 mt-1 text-xs text-muted-foreground hover:text-primary transition-colors"
       >
         查看全部
         <ChevronRight className="h-3 w-3" />

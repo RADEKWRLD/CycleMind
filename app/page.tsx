@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { CheckCircle, Route, Shield, Code, Terminal, ListChecks, Clock, Github, Mail } from "lucide-react";
+import { CheckCircle, Route, Shield, Terminal, ListChecks, Clock, Github as GithubIcon, Mail } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,7 +28,6 @@ const architectureFeatures = [
 const apiCards = [
   { title: "接口映射", desc: "AI 从架构中自动提取所有 CRUD 和专用端点，生成完整的路由映射。", icon: Route, code: "GET /api/v1/projects/{id}" },
   { title: "认证集成", desc: "自动识别需要认证的接口，生成 JWT、OAuth2 或 API Key 认证头文档。", icon: Shield, code: "security: - bearerAuth: []" },
-  { title: "SDK 生成", desc: "一键导出 TypeScript、Python 或 Go 客户端 SDK，直接从规范生成。", icon: Code, code: "npm install @generated/sdk" },
 ];
 
 const devPlanFeatures = [
@@ -102,6 +101,20 @@ export default function HomePage() {
       gsap.from("[data-anim='tpl-img']", {
         scrollTrigger: { trigger: "#templates", start: "top 80%" },
         x: 60, opacity: 0, duration: 0.8, ease: "power2.out",
+      });
+      // SVG path draw + arrowhead
+      gsap.to("[data-anim='tpl-path']", {
+        scrollTrigger: { trigger: "[data-anim='tpl-flow']", start: "top 80%" },
+        strokeDashoffset: 0, duration: 1.5, ease: "power2.inOut",
+      });
+      gsap.to("[data-anim='tpl-arrowhead']", {
+        scrollTrigger: { trigger: "[data-anim='tpl-flow']", start: "top 80%" },
+        opacity: 1, duration: 0.4, delay: 1.3, ease: "power2.out",
+      });
+      // Stagger cards
+      gsap.from("[data-anim='tpl-card']", {
+        scrollTrigger: { trigger: "[data-anim='tpl-flow']", start: "top 80%" },
+        y: 30, opacity: 0, duration: 0.5, stagger: 0.2, ease: "power2.out",
       });
 
       // API cards
@@ -212,55 +225,56 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== Orchestrator ===== */}
+      {/* ===== Orchestrator — 居中宽幅：标题居中 + 全宽大图 ===== */}
       <section id="orchestrator" className="py-32 px-6 lg:px-10 bg-surface-mid">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div data-anim="orch-text">
+        <div className="max-w-7xl mx-auto">
+          <div data-anim="orch-text" className="text-center max-w-3xl mx-auto mb-16">
             <h2 data-anim="section-title" className="text-4xl font-extrabold tracking-tight mb-6">
               多 Agent <span className="text-primary">并行协作</span>
             </h2>
-            <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-              Orchestrator 智能分析你的需求，自动拆解任务并调度五大专业 Agent 并行运行。需求分析、架构设计、ER 建模、API 规范、计划制定同时进行，SSE 实时推送每个 Agent 的生成进度。
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Orchestrator 智能分析你的需求，自动拆解任务并调度五大专业 Agent 并行运行。SSE 实时推送每个 Agent 的生成进度。
             </p>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">Orchestrator 智能需求分析与任务分配</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">五大 Sub-Agent 并行处理，效率倍增</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">SSE 实时流式推送生成进度</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">追加需求自动增量更新，版本持续演进</span>
-              </li>
-            </ul>
           </div>
-          <div data-anim="orch-img">
-            <div className="bg-surface-lowest rounded-2xl p-8 shadow-ambient overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary to-[#ff8c66]" />
-              <img className="w-full rounded-lg" src="/five-agents.png" alt="五大 Agent 并行架构示意" />
+          <div data-anim="orch-img" className="relative max-w-4xl mx-auto">
+            <div className="bg-surface-lowest rounded-2xl p-6 lg:p-10 shadow-ambient overflow-hidden relative">
+              <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
+              <img className="w-full rounded-xl relative z-10" src="/five-agents.png" alt="五大 Agent 并行架构示意" />
             </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {[
+              { label: "智能需求分析", desc: "Orchestrator 自动拆解任务" },
+              { label: "五大 Agent 并行", desc: "效率倍增，同时处理" },
+              { label: "SSE 实时推送", desc: "流式返回生成进度" },
+              { label: "增量更新", desc: "追加需求自动演进" },
+            ].map((item, i) => (
+              <div key={i} className="p-5 bg-surface-lowest rounded-xl shadow-sm text-center">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-primary font-bold text-sm">{String(i + 1).padStart(2, "0")}</span>
+                </div>
+                <div className="font-bold text-sm mb-1">{item.label}</div>
+                <div className="text-xs text-muted-foreground">{item.desc}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ===== Architecture ===== */}
+      {/* ===== Architecture — 经典左图右文 ===== */}
       <section id="architecture" className="py-32 px-6 lg:px-10 bg-background">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div data-anim="arch-img" className="order-2 md:order-1">
-            <div className="bg-surface-lowest rounded-2xl p-8 shadow-ambient overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary to-[#ff8c66]" />
-              <div className="flex items-center gap-2 mb-6 text-primary">
+            <div className="bg-surface-lowest rounded-2xl shadow-ambient overflow-hidden relative">
+              <div className="absolute -top-20 -left-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="p-6 flex items-center gap-2 text-primary">
                 <Terminal size={18} />
                 <span className="font-bold text-sm tracking-widest uppercase">系统设计输出</span>
               </div>
-              <img className="w-full rounded-xl" src="/mermaid-display.png" alt="多 Agent 系统架构示意" />
+              <div className="px-6 pb-6">
+                <img className="w-full rounded-xl relative z-10" src="/mermaid-display.png" alt="系统架构图预览" />
+              </div>
+              <div className="h-1.5 bg-linear-to-r from-primary via-[#ff8c66] to-primary/30" />
             </div>
           </div>
           <div data-anim="arch-text" className="order-1 md:order-2">
@@ -282,21 +296,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== ER Diagrams ===== */}
-      <section id="er-diagrams" className="py-32 px-6 lg:px-10 bg-surface-mid">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div data-anim="er-text" className="order-2 md:order-1">
-            <div className="bg-surface-lowest rounded-2xl p-8 shadow-ambient overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary to-[#ff8c66]" />
-              <img className="w-full rounded-lg" src="/img-er.png" alt="ER 关系图预览" />
-            </div>
-          </div>
-          <div data-anim="er-img" className="order-1 md:order-2">
+      {/* ===== ER Diagrams — 右文左图，图片浮出式 ===== */}
+      <section id="er-diagrams" className="py-32 px-6 lg:px-10 bg-surface-mid relative z-10">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-5 gap-12 items-center">
+          <div data-anim="er-img" className="md:col-span-2 order-2 md:order-1">
             <h2 data-anim="section-title" className="text-4xl font-extrabold tracking-tight mb-6">
               一键生成 <span className="text-primary">ER 图</span>
             </h2>
             <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-              从需求中自动识别数据实体、属性和关联关系，生成 Mermaid ER 关系图。清晰展示表结构与外键关系，助力数据库设计。
+              从需求中自动识别数据实体、属性和关联关系，生成 Mermaid ER 关系图。清晰展示表结构与外键关系。
             </p>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
@@ -309,43 +317,74 @@ export default function HomePage() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">支持编辑代码后即时刷新预览</span>
+                <span className="font-medium">编辑代码后即时刷新预览</span>
               </li>
             </ul>
+          </div>
+          <div data-anim="er-text" className="md:col-span-3 order-1 md:order-2">
+            <div className="rounded-2xl overflow-hidden shadow-2xl bg-surface-lowest p-3">
+              <img className="w-full rounded-xl" src="/img-er.png" alt="ER 关系图预览" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ===== Templates ===== */}
+      {/* ===== Templates — 上下结构：居中描述 + 三列特性卡 + 大图 ===== */}
       <section id="templates" className="py-32 px-6 lg:px-10 bg-background">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div data-anim="tpl-text">
+        <div className="max-w-7xl mx-auto">
+          <div data-anim="tpl-text" className="text-center max-w-3xl mx-auto mb-12">
             <h2 data-anim="section-title" className="text-4xl font-extrabold tracking-tight mb-6">
               五大模板库<span className="text-primary">让你快人一步</span>
             </h2>
-            <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
+            <p className="text-muted-foreground text-lg leading-relaxed">
               内置丰富的项目模板，覆盖 Web 应用、移动端、微服务等常见架构。选择模板一键生成完整设计文档，快速启动你的下一个项目。
             </p>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">覆盖主流技术栈与架构模式</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">一键生成完整设计文档</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle className="text-primary mt-0.5 shrink-0" size={20} />
-                <span className="font-medium">支持基于模板二次迭代</span>
-              </li>
-            </ul>
           </div>
-          <div data-anim="tpl-img">
-            <div className="bg-surface-lowest rounded-2xl p-8 shadow-ambient overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary to-[#ff8c66]" />
-              <img className="w-full rounded-lg" src="/template.png" alt="模板库截图" />
+          <div data-anim="tpl-flow" className="relative mb-12">
+            {/* SVG 曲线连接线 */}
+            <svg className="hidden md:block absolute top-[60%] left-0 w-full h-20 -translate-y-1/2 z-20 pointer-events-none" viewBox="0 0 1200 80" fill="none" preserveAspectRatio="none">
+              <path
+                data-anim="tpl-path"
+                d="M 100,40 C 250,40 250,60 400,60 C 480,60 480,20 560,20 C 640,20 640,60 720,60 C 800,60 800,40 900,40 L 1080,40"
+                stroke="url(#tpl-gradient)"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeDasharray="1400"
+                strokeDashoffset="1400"
+              />
+              {/* 箭头 */}
+              <polygon data-anim="tpl-arrowhead" points="1090,40 1068,28 1068,52" fill="var(--primary)" opacity="0" />
+              <defs>
+                <linearGradient id="tpl-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.15" />
+                  <stop offset="50%" stopColor="var(--primary)" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.8" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="grid md:grid-cols-3 gap-6 relative z-10">
+              {[
+                { num: "01", title: "覆盖主流技术栈", desc: "Web、移动端、微服务等架构模式" },
+                { num: "02", title: "一键生成文档", desc: "完整设计文档即刻可用" },
+                { num: "03", title: "支持二次迭代", desc: "基于模板追加需求持续演进" },
+              ].map((item, i) => (
+                <div key={item.num} data-anim="tpl-card" className="p-6 bg-surface-mid rounded-xl group card-hover relative">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <span className="text-sm font-bold text-primary">{item.num}</span>
+                  </div>
+                  <h4 className="text-lg font-bold">{item.title}</h4>
+                  <p className="mt-2 text-sm text-muted-foreground">{item.desc}</p>
+                  {i < 2 && (
+                    <div className="hidden md:flex absolute top-1/2 -right-4.5 -translate-y-1/2 w-7 h-7 rounded-full bg-background items-center justify-center z-30 shadow-sm">
+                      <div className="w-3 h-3 rounded-full bg-primary/50" />
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
+          </div>
+          <div data-anim="tpl-img" className="max-w-4xl mx-auto relative rounded-2xl overflow-hidden shadow-ambient">
+            <img className="w-full" src="/template.png" alt="模板库截图" />
           </div>
         </div>
       </section>
@@ -359,7 +398,7 @@ export default function HomePage() {
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">基于架构设计自动生成 Swagger/OpenAPI 3.0 接口文档</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {apiCards.map((card, i) => (
               <div key={i} data-anim="api-card" className="p-8 bg-surface-lowest rounded-2xl shadow-ambient hover:shadow-2xl transition-all group card-hover">
                 <card.icon className="text-primary mb-4" size={28} />
@@ -498,7 +537,7 @@ export default function HomePage() {
           </div>
           <div className="flex gap-4">
             <a className="w-10 h-10 rounded-full bg-surface-mid flex items-center justify-center text-muted-foreground hover:text-primary transition-all" href="https://github.com/RADEKWRLD" target="_blank" rel="noopener noreferrer">
-              <Github size={18} />
+              <GithubIcon size={18} />
             </a>
             <a className="w-10 h-10 rounded-full bg-surface-mid flex items-center justify-center text-muted-foreground hover:text-primary transition-all" href="#">
               <Mail size={18} />

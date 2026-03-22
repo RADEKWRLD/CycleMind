@@ -71,7 +71,7 @@ export function SidebarTemplates() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#666] hover:bg-[#FA5D29]/10 hover:text-[#FA5D29] transition-all duration-200 w-full"
+        className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200 w-full"
       >
         <LayoutTemplate className="h-4 w-4" />
         模板库
@@ -84,12 +84,12 @@ export function SidebarTemplates() {
               <DialogTitle>从模板创建项目</DialogTitle>
               <button
                 onClick={() => setOpen(false)}
-                className="text-[#999] hover:text-[#666] transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-sm text-[#999]">
+            <p className="text-sm text-muted-foreground">
               选择一个模板快速开始，模板会预填需求描述
             </p>
           </DialogHeader>
@@ -99,7 +99,7 @@ export function SidebarTemplates() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="h-28 rounded-xl bg-[var(--muted)]/50 animate-pulse"
+                  className="h-28 rounded-xl bg-muted/50 animate-pulse"
                 />
               ))}
             </div>
@@ -113,17 +113,17 @@ export function SidebarTemplates() {
                     key={t.id}
                     onClick={() => handleSelect(t)}
                     disabled={!!creating}
-                    className="flex flex-col items-start gap-2 p-4 rounded-xl border border-[var(--border)] hover:border-[#FA5D29]/40 hover:bg-[#FA5D29]/5 transition-all duration-200 text-left disabled:opacity-50"
+                    className="flex flex-col items-start gap-2 p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 text-left disabled:opacity-50"
                   >
-                    <div className="h-9 w-9 rounded-lg bg-[#FA5D29]/10 flex items-center justify-center">
-                      <Icon className="h-5 w-5 text-[#FA5D29]" />
+                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Icon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-[#1A1A1A]">
+                      <p className="text-sm font-medium text-foreground">
                         {isCreating ? "创建中..." : t.name}
                       </p>
                       {t.description && (
-                        <p className="text-xs text-[#999] mt-0.5 line-clamp-2">
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                           {t.description}
                         </p>
                       )}
