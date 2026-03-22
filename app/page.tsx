@@ -523,7 +523,6 @@ export default function HomePage() {
                 免费注册 &rarr;
               </Link>
             </div>
-            <p className="mt-6 text-white/60 font-medium text-sm">无需信用卡，2 分钟即可启动。</p>
           </div>
         </div>
       </section>
@@ -538,9 +537,6 @@ export default function HomePage() {
           <div className="flex gap-4">
             <a className="w-10 h-10 rounded-full bg-surface-mid flex items-center justify-center text-muted-foreground hover:text-primary transition-all" href="https://github.com/RADEKWRLD" target="_blank" rel="noopener noreferrer">
               <GithubIcon size={18} />
-            </a>
-            <a className="w-10 h-10 rounded-full bg-surface-mid flex items-center justify-center text-muted-foreground hover:text-primary transition-all" href="#">
-              <Mail size={18} />
             </a>
           </div>
         </div>
