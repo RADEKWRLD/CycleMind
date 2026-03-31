@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Geist_Mono } from "next/font/google";
+import { Lora, Poppins, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const funnelDisplay = localFont({
-  src: "../public/Funnel_Display/FunnelDisplay-VariableFont_wght.ttf",
-  variable: "--font-funnel-display",
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-lora",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,8 +39,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=LXGW+WenKai:wght@300;400;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
-        className={`${funnelDisplay.variable} ${geistMono.variable} antialiased`}
+        className={`${lora.variable} ${poppins.variable} ${jetbrainsMono.variable} antialiased`}
       >
         {children}
         <Toaster />

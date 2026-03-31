@@ -361,7 +361,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       <div className="flex-1 flex min-h-0">
         <div
           ref={chatRef}
-          className="overflow-hidden bg-[var(--background)]"
+          className="overflow-hidden bg-background border border-border rounded-lg m-1"
           style={{ flex: "0 0 420px", minWidth: 320 }}
         >
           <ChatPanel
@@ -380,7 +380,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         </div>
         <div
           ref={previewRef}
-          className="overflow-hidden"
+          className="overflow-hidden border border-border rounded-lg m-1"
           style={{ flex: 1 }}
         >
           <PreviewPanel

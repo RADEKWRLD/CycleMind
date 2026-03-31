@@ -5,42 +5,42 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #FAFAFA;
-  --foreground: #1A1A1A;
+  --background: #ECE9E0;
+  --foreground: #141413;
   --primary: #FA5D29;
   --primary-foreground: #FFFFFF;
-  --secondary: #F5F0EB;
-  --secondary-foreground: #1A1A1A;
-  --accent: #FFF0EB;
-  --accent-foreground: #1A1A1A;
-  --muted: #F5F0EB;
-  --muted-foreground: #737373;
-  --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
-  --border: #E8E0D8;
-  --input: #E8E0D8;
+  --secondary: #F5F3EC;
+  --secondary-foreground: #141413;
+  --accent: #F5F3EC;
+  --accent-foreground: #141413;
+  --muted: #F5F3EC;
+  --muted-foreground: #6B6860;
+  --card: #F5F3EC;
+  --card-foreground: #141413;
+  --border: #D8D5CD;
+  --input: #D8D5CD;
   --ring: #FA5D29;
-  --destructive: #EF4444;
+  --destructive: #C0453A;
   --destructive-foreground: #FFFFFF;
   --radius: 8px;
-  --popover: #FFFFFF;
-  --popover-foreground: #1A1A1A;
+  --popover: #FDFCF8;
+  --popover-foreground: #141413;
   --chart-1: #FA5D29;
   --chart-2: #E8A87C;
   --chart-3: #D4714E;
   --chart-4: #F5C4A1;
   --chart-5: #C2501F;
-  --sidebar: #F5F0EB;
-  --sidebar-foreground: #1A1A1A;
+  --sidebar: #F5F3EC;
+  --sidebar-foreground: #141413;
   --sidebar-primary: #FA5D29;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FFF0EB;
-  --sidebar-accent-foreground: #1A1A1A;
-  --sidebar-border: #E8E0D8;
+  --sidebar-accent: #F5F3EC;
+  --sidebar-accent-foreground: #141413;
+  --sidebar-border: #D8D5CD;
   --sidebar-ring: #FA5D29;
-  --surface-lowest: #FFFFFF;
-  --surface-mid: #FAF9F9;
-  --surface-high: #F0EFEE;
+  --surface-lowest: #FDFCF8;
+  --surface-mid: #F5F3EC;
+  --surface-high: #E3E0D6;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,15 +60,15 @@
     --border: #2E2E2E;
     --input: #2E2E2E;
     --ring: #FA5D29;
-    --destructive: #EF4444;
+    --destructive: #C0453A;
     --destructive-foreground: #FFFFFF;
     --popover: #171717;
     --popover-foreground: #EDEDED;
     --chart-1: #FA5D29;
-    --chart-2: #E8A87C;
-    --chart-3: #D4714E;
-    --chart-4: #F5C4A1;
-    --chart-5: #C2501F;
+    --chart-2: #C4956E;
+    --chart-3: #B06A4A;
+    --chart-4: #D4A882;
+    --chart-5: #A05030;
     --sidebar: #171717;
     --sidebar-foreground: #EDEDED;
     --sidebar-primary: #FA5D29;
@@ -101,8 +101,9 @@
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --font-sans: var(--font-funnel-display);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-poppins), 'Noto Sans SC', system-ui, sans-serif;
+  --font-serif: var(--font-lora), 'LXGW WenKai', 'Songti SC', serif;
+  --font-mono: var(--font-jetbrains), monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -146,7 +147,7 @@ a, button, [role="button"], input, textarea, select {
 
 /* Card hover lift effect */
 .card-hover {
-  transition: transform 300ms ease, box-shadow 300ms ease;
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .card-hover:hover {
   transform: translateY(-2px);
@@ -161,12 +162,77 @@ a, button, [role="button"], input, textarea, select {
   margin: 2rem 0;
 }
 
-/* Display heading */
+/* Display heading — serif, warm, editorial */
 .heading-display {
+  font-family: var(--font-serif);
   font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+/* Section dark — inverted background for alternating rhythm */
+.section-dark {
+  --background: #141413;
+  --foreground: #F5F3EC;
+  --muted-foreground: #A8A59C;
+  --surface-lowest: #1E1D1C;
+  --surface-mid: #1A1918;
+  --border: #2E2D2B;
+  --card: #1E1D1C;
+  background-color: #141413;
+  color: #F5F3EC;
+}
+
+/* Noise/grain texture overlay */
+.noise-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Button press feedback */
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Anthropic orange focus ring */
+.focus-anthropic:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(250, 93, 41, 0.35);
+}
+
+/* Glassmorphism nav */
+.glass-nav {
+  background: rgba(236, 233, 224, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.dark .glass-nav {
+  background: rgba(10, 10, 10, 0.8);
+}
+@media (prefers-color-scheme: dark) {
+  .glass-nav {
+    background: rgba(10, 10, 10, 0.8);
+  }
+}
+
+/* Ambient shadow */
+.shadow-ambient {
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.06);
+}
+.dark .shadow-ambient {
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.3);
+}
+@media (prefers-color-scheme: dark) {
+  .shadow-ambient {
+    box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.3);
+  }
 }
 
 /* ─── Markdown renderer ─── */
@@ -350,7 +416,7 @@ a, button, [role="button"], input, textarea, select {
   --border: #2E2E2E;
   --input: #2E2E2E;
   --ring: #FA5D29;
-  --destructive: #EF4444;
+  --destructive: #C0453A;
   --destructive-foreground: #FFFFFF;
   --popover: #171717;
   --popover-foreground: #EDEDED;
@@ -370,34 +436,6 @@ a, button, [role="button"], input, textarea, select {
   --surface-lowest: #0A0A0A;
   --surface-mid: #141414;
   --surface-high: #1E1E1E;
-}
-
-/* Glassmorphism nav */
-.glass-nav {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-.dark .glass-nav {
-  background: rgba(10, 10, 10, 0.8);
-}
-@media (prefers-color-scheme: dark) {
-  .glass-nav {
-    background: rgba(10, 10, 10, 0.8);
-  }
-}
-
-/* Ambient shadow */
-.shadow-ambient {
-  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.06);
-}
-.dark .shadow-ambient {
-  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.3);
-}
-@media (prefers-color-scheme: dark) {
-  .shadow-ambient {
-    box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.3);
-  }
 }
 
 @layer base {
