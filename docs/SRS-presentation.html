@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CycleMind — 软件需求规格说明书 演示汇报</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#FA5D29;--orange-light:#FF7A4D;--orange-glow:rgba(250,93,41,.15);
+  --bg:#FDFCF8;--bg-alt:#F5F3EC;--bg-deep:#ECE9E0;
+  --surface:#fff;--surface-alt:#F9F7F2;
+  --text:#141413;--text-secondary:#6B6860;--text-muted:#9C9889;
+  --border:#E3E0D6;--border-light:#EDEBE4;
+  --dark:#1A1715;--dark-surface:#0A0A0A;
+  --radius:10px;
+  --font-serif:'Lora','Noto Sans SC','Songti SC',serif;
+  --font-sans:'Poppins','Noto Sans SC',sans-serif;
+  --font-mono:'JetBrains Mono','Noto Sans SC',monospace;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.08);
+  --shadow-glow:0 0 40px rgba(250,93,41,.12);
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font-serif);color:var(--text);background:var(--bg);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(24px);background:rgba(253,252,248,.82);border-bottom:1px solid var(--border-light);transition:box-shadow .3s}
+nav.scrolled{box-shadow:var(--shadow-sm)}
+.nav-brand{font-family:var(--font-sans);font-weight:700;font-size:1.1rem;letter-spacing:-.02em;color:var(--text);display:flex;align-items:center;gap:8px}
+.nav-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.nav-links{display:flex;gap:6px}
+.nav-links a{font-family:var(--font-sans);font-size:.75rem;padding:6px 14px;border-radius:20px;color:var(--text-secondary);text-decoration:none;letter-spacing:.02em;font-weight:500;transition:all .25s}
+.nav-links a:hover,.nav-links a.active{background:var(--orange-glow);color:var(--orange)}
+.nav-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--orange),var(--orange-light));z-index:101;width:0%;transition:width .1s}
+
+/* ── SECTIONS ── */
+section{min-height:100vh;padding:120px 60px 80px;position:relative;display:flex;flex-direction:column;justify-content:center}
+section:nth-child(even){background:var(--bg-alt)}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;background:var(--bg)}
+.hero::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(250,93,41,.08) 0%,transparent 70%);top:-100px;right:-100px;pointer-events:none}
+.hero::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(250,93,41,.05) 0%,transparent 70%);bottom:-50px;left:-50px;pointer-events:none}
+.hero-tag{font-family:var(--font-sans);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:20px;opacity:0}
+.hero h1{font-family:var(--font-serif);font-size:clamp(2.4rem,5vw,4rem);font-weight:700;line-height:1.15;letter-spacing:-.02em;color:var(--text);margin-bottom:16px;opacity:0}
+.hero h1 span{color:var(--orange)}
+.hero-sub{font-size:1.15rem;color:var(--text-secondary);max-width:560px;margin:0 auto 32px;opacity:0}
+.hero-meta{display:flex;gap:32px;font-family:var(--font-sans);font-size:.8rem;color:var(--text-muted);opacity:0}
+.hero-meta span{display:flex;align-items:center;gap:6px}
+
+/* ── CHAPTER HEADER ── */
+.ch-num{font-family:var(--font-sans);font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:12px}
+.ch-title{font-family:var(--font-serif);font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;line-height:1.2;letter-spacing:-.015em;margin-bottom:8px}
+.ch-desc{font-size:1rem;color:var(--text-secondary);max-width:640px;margin-bottom:40px}
+
+/* ── CARDS ── */
+.card-grid{display:grid;gap:20px;width:100%;max-width:1100px}
+.card-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.card-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.card-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);padding:28px;transition:all .3s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--border)}
+.card-icon{width:40px;height:40px;border-radius:10px;background:var(--orange-glow);display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:1.2rem;color:var(--orange)}
+.card h3{font-family:var(--font-sans);font-size:.95rem;font-weight:600;margin-bottom:8px;color:var(--text)}
+.card p{font-size:.88rem;color:var(--text-secondary);line-height:1.65}
+.card-tag{display:inline-block;font-family:var(--font-sans);font-size:.65rem;letter-spacing:.05em;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--orange-glow);color:var(--orange);margin-bottom:12px}
+
+/* ── TABLE ── */
+.data-table{width:100%;max-width:1100px;border-collapse:collapse;font-size:.85rem}
+.data-table th{font-family:var(--font-sans);font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);text-align:left;padding:10px 16px;border-bottom:2px solid var(--border);white-space:nowrap}
+.data-table td{padding:10px 16px;border-bottom:1px solid var(--border-light);color:var(--text-secondary);vertical-align:top}
+.data-table tr:hover td{background:var(--surface-alt)}
+.data-table .pk{color:var(--orange);font-weight:600;font-family:var(--font-mono);font-size:.78rem}
+.data-table .fk{color:#5B8DEF;font-weight:500;font-family:var(--font-mono);font-size:.78rem}
+.data-table code{font-family:var(--font-mono);font-size:.78rem;background:var(--bg-alt);padding:2px 6px;border-radius:4px}
+
+/* ── FLOW DIAGRAM ── */
+.flow-container{width:100%;max-width:1100px;overflow:visible}
+.flow-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.flow-node{font-family:var(--font-sans);font-size:.78rem;font-weight:500;padding:12px 20px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);white-space:nowrap;text-align:center;min-width:120px;transition:all .3s}
+.flow-node.primary{background:var(--orange);color:#fff;border-color:var(--orange);font-weight:600}
+.flow-node.accent{background:linear-gradient(135deg,#FA5D29,#FF7A4D);color:#fff;border-color:transparent;box-shadow:var(--shadow-glow)}
+.flow-node.muted{background:var(--bg-alt);border-color:var(--border);color:var(--text-secondary)}
+.flow-node.agent{background:#FFF5F0;border-color:#FDDDD1;color:#C44A15;font-size:.72rem}
+.flow-arrow{color:var(--text-muted);font-size:1.2rem;flex-shrink:0}
+.flow-arrow.down{transform:rotate(90deg)}
+.flow-label{font-family:var(--font-sans);font-size:.65rem;color:var(--text-muted);text-align:center;margin:-8px 0 12px}
+.flow-branch{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* ── STATS ROW ── */
+.stats-row{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+.stat-item{display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);padding:24px 32px;min-width:140px;flex:1}
+.stat-num{font-family:var(--font-sans);font-size:2rem;font-weight:700;color:var(--orange);line-height:1}
+.stat-label{font-family:var(--font-sans);font-size:.72rem;color:var(--text-muted);margin-top:6px;letter-spacing:.03em}
+
+/* ── TIMELINE ── */
+.timeline{position:relative;padding-left:32px;max-width:800px}
+.timeline::before{content:'';position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:28px;padding-left:24px}
+.timeline-item::before{content:'';position:absolute;left:-29px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--orange);z-index:1}
+.timeline-item.done::before{background:var(--orange)}
+.timeline-item h4{font-family:var(--font-sans);font-size:.9rem;font-weight:600;margin-bottom:4px}
+.timeline-item p{font-size:.85rem;color:var(--text-secondary)}
+
+/* ── ARCH DIAGRAM ── */
+.arch-diagram{display:flex;flex-direction:column;gap:16px;width:100%;max-width:1000px}
+.arch-layer{display:flex;gap:12px;align-items:stretch}
+.arch-layer-label{font-family:var(--font-sans);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;writing-mode:vertical-rl;text-orientation:upright;color:var(--text-muted);padding:12px 4px;display:flex;align-items:center;justify-content:center;min-width:28px;flex-shrink:0}
+.arch-layer-content{display:flex;gap:10px;flex:1;flex-wrap:wrap}
+.arch-box{font-family:var(--font-sans);font-size:.75rem;font-weight:500;padding:14px 18px;border-radius:8px;text-align:center;flex:1;min-width:100px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.layer-ui .arch-box{background:#FFF5F0;border:1px solid #FDDDD1;color:#C44A15}
+.layer-api .arch-box{background:#F0F4FF;border:1px solid #D1DDFB;color:#3B63CF}
+.layer-ai .arch-box{background:#F0FFF4;border:1px solid #C6F6D5;color:#22863A}
+.layer-data .arch-box{background:#FDF6EC;border:1px solid #F5E6CE;color:#A16207}
+.arch-arrow{text-align:center;color:var(--text-muted);font-size:.9rem;padding:4px 0}
+
+/* ── ER DIAGRAM ── */
+.er-container{display:flex;gap:16px;flex-wrap:wrap;width:100%;max-width:1100px;justify-content:center}
+.er-entity{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);min-width:200px;overflow:hidden;flex:0 0 auto}
+.er-entity-header{font-family:var(--font-sans);font-size:.8rem;font-weight:700;padding:10px 16px;background:var(--orange);color:#fff;text-align:center}
+.er-entity-header.secondary{background:#3B63CF}
+.er-entity-header.tertiary{background:#22863A}
+.er-entity-body{padding:8px 0}
+.er-field{display:flex;justify-content:space-between;padding:4px 16px;font-size:.75rem;font-family:var(--font-mono)}
+.er-field .name{color:var(--text)}
+.er-field .type{color:var(--text-muted)}
+.er-field.pk .name{color:var(--orange);font-weight:600}
+.er-relation{display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text-muted);font-family:var(--font-sans);min-width:60px;flex-shrink:0;flex-direction:column;gap:2px}
+.er-relation .line{width:40px;height:1px;background:var(--border);position:relative}
+.er-relation .label{font-size:.6rem;letter-spacing:.03em}
+
+/* ── API TABLE ── */
+.api-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border-light);font-size:.82rem;transition:background .2s}
+.api-row:hover{background:var(--surface-alt)}
+.api-method{font-family:var(--font-mono);font-weight:700;font-size:.7rem;padding:3px 8px;border-radius:4px;min-width:52px;text-align:center;color:#fff}
+.api-method.get{background:#22863A}.api-method.post{background:#3B63CF}.api-method.patch{background:#A16207}.api-method.delete{background:#CF3B3B}
+.api-path{font-family:var(--font-mono);font-size:.78rem;color:var(--text);flex:1}
+.api-desc{color:var(--text-secondary);font-size:.78rem;width:200px;text-align:right}
+.api-auth{font-family:var(--font-sans);font-size:.6rem;font-weight:600;padding:2px 8px;border-radius:10px}
+.api-auth.yes{background:#F0FFF4;color:#22863A}.api-auth.no{background:#FFF5F0;color:#CF3B3B}
+
+/* ── PERF BARS ── */
+.perf-item{display:flex;align-items:center;gap:16px;margin-bottom:14px;max-width:700px}
+.perf-label{font-family:var(--font-sans);font-size:.8rem;font-weight:500;min-width:180px;color:var(--text)}
+.perf-bar-bg{flex:1;height:8px;background:var(--bg-deep);border-radius:4px;overflow:hidden}
+.perf-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--orange),var(--orange-light));width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.perf-val{font-family:var(--font-mono);font-size:.78rem;color:var(--orange);font-weight:600;min-width:80px;text-align:right}
+
+/* ── CHECKLIST ── */
+.checklist{max-width:800px}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-light)}
+.check-icon{width:22px;height:22px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;margin-top:2px}
+.check-text{font-size:.88rem;color:var(--text)}
+.check-text strong{font-family:var(--font-sans);font-weight:600}
+
+/* ── END SLIDE ── */
+.end-slide{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:var(--dark);color:#EDEDED;position:relative;overflow:hidden}
+.end-slide::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(250,93,41,.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+.end-slide h2{font-family:var(--font-serif);font-size:clamp(2rem,4vw,3.2rem);font-weight:700;margin-bottom:12px;letter-spacing:-.02em;position:relative}
+.end-slide p{color:#999;font-size:1rem;max-width:480px;position:relative}
+.end-tag{font-family:var(--font-sans);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:20px;position:relative}
+
+/* ── UTILS ── */
+.max-w{max-width:1100px;width:100%}
+.mb-20{margin-bottom:20px}.mb-32{margin-bottom:32px}.mb-48{margin-bottom:48px}
+.reveal{opacity:0;transform:translateY(24px)}
+.fade-up{opacity:0;transform:translateY(20px)}
+
+@media(max-width:768px){
+  section{padding:100px 24px 60px}
+  .card-grid.cols-2,.card-grid.cols-3,.card-grid.cols-4{grid-template-columns:1fr}
+  .arch-layer{flex-direction:column}
+  .arch-layer-label{writing-mode:horizontal-tb;transform:none}
+  .flow-row{flex-direction:column;gap:8px}
+  .flow-arrow{transform:rotate(90deg)}
+  .er-container{flex-direction:column;align-items:center}
+  .stats-row{flex-direction:column}
+  nav{padding:12px 20px}
+  .nav-links{display:none}
+  .api-desc{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="nav-progress" id="progressBar"></div>
+
+<!-- Navigation -->
+<nav id="mainNav">
+  <div class="nav-brand"><span class="dot"></span>CycleMind SRS</div>
+  <div class="nav-links">
+    <a href="#hero">首页</a>
+    <a href="#intro">引言</a>
+    <a href="#overview">概述</a>
+    <a href="#users">用户</a>
+    <a href="#functions">功能</a>
+    <a href="#architecture">架构</a>
+    <a href="#data">数据</a>
+    <a href="#performance">性能</a>
+    <a href="#acceptance">验收</a>
+  </div>
+</nav>
+
+<!-- ============ SLIDE 0: HERO ============ -->
+<section class="hero" id="hero">
+  <p class="hero-tag">Software Requirements Specification</p>
+  <h1>CycleMind<br><span>软件需求规格说明书</span></h1>
+  <p class="hero-sub">AI 驱动的软件设计平台 — 用一句话需求，生成整套设计文档</p>
+  <div class="hero-meta">
+    <span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> AI-SDLC 项目组</span>
+  </div>
+</section>
+
+<!-- ============ SLIDE 1: INTRODUCTION ============ -->
+<section id="intro">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 01</p>
+    <h2 class="ch-title reveal">引言 — 为什么需要这份文档</h2>
+    <p class="ch-desc reveal">CycleMind 利用多 AI Agent 协作技术，将自然语言需求自动转化为架构图、ER 图、API 规范和开发计划，大幅缩短从需求到设计的周期。</p>
+    <div class="card-grid cols-3 mb-48">
+      <div class="card reveal">
+        <div class="card-icon">&#128218;</div>
+        <h3>项目背景</h3>
+        <p>传统 SDLC 中需求分析与架构设计耗时较长，高度依赖资深工程师经验。CycleMind 将这一过程从数天压缩至分钟级别。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">&#127919;</div>
+        <h3>文档目的</h3>
+        <p>为开发团队、测试团队、项目管理者和最终用户提供完整、准确的需求描述，作为设计、编码和验收的基准。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">&#128279;</div>
+        <h3>系统关系</h3>
+        <p>独立 Web 应用，通过 DeepSeek API 获取 AI 能力，Neon PostgreSQL 存储数据，部署于 Vercel 平台。</p>
+      </div>
+    </div>
+    <div class="stats-row reveal">
+      <div class="stat-item"><span class="stat-num" data-count="5">0</span><span class="stat-label">AI Agent</span></div>
+      <div class="stat-item"><span class="stat-num" data-count="17">0</span><span class="stat-label">API 端点</span></div>
+      <div class="stat-item"><span class="stat-num" data-count="6">0</span><span class="stat-label">数据库表</span></div>
+      <div class="stat-item"><span class="stat-num" data-count="10">0</span><span class="stat-label">功能模块</span></div>
+      <div class="stat-item"><span class="stat-num" data-count="22">0</span><span class="stat-label">验收标准</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 2: TASK OVERVIEW ============ -->
+<section id="overview">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 02</p>
+    <h2 class="ch-title reveal">任务概述 — 系统全景</h2>
+    <p class="ch-desc reveal">四层架构 + 七个 AI Agent + 流式实时交互</p>
+
+    <!-- Architecture Diagram -->
+    <div class="arch-diagram mb-48">
+      <div class="arch-layer layer-ui reveal">
+        <div class="arch-layer-label">表示层</div>
+        <div class="arch-layer-content">
+          <div class="arch-box">落地页</div>
+          <div class="arch-box">认证页面</div>
+          <div class="arch-box">项目仪表盘</div>
+          <div class="arch-box">AI 工作空间</div>
+          <div class="arch-box">个人资料</div>
+        </div>
+      </div>
+      <div class="arch-arrow reveal">&#8595;</div>
+      <div class="arch-layer layer-api reveal">
+        <div class="arch-layer-label">业务层</div>
+        <div class="arch-layer-content">
+          <div class="arch-box">认证服务</div>
+          <div class="arch-box">会话管理</div>
+          <div class="arch-box">AI 对话</div>
+          <div class="arch-box">Agent 编排</div>
+          <div class="arch-box">文档生成</div>
+          <div class="arch-box">文档管理</div>
+          <div class="arch-box">用户管理</div>
+          <div class="arch-box">模板服务</div>
+        </div>
+      </div>
+      <div class="arch-arrow reveal">&#8595;</div>
+      <div class="arch-layer layer-ai reveal">
+        <div class="arch-layer-label">AI 层</div>
+        <div class="arch-layer-content">
+          <div class="arch-box">对话 Agent</div>
+          <div class="arch-box">编排器</div>
+          <div class="arch-box">需求分析</div>
+          <div class="arch-box">架构设计</div>
+          <div class="arch-box">ER 图</div>
+          <div class="arch-box">API 规范</div>
+          <div class="arch-box">开发计划</div>
+        </div>
+      </div>
+      <div class="arch-arrow reveal">&#8595;</div>
+      <div class="arch-layer layer-data reveal">
+        <div class="arch-layer-label">数据层</div>
+        <div class="arch-layer-content">
+          <div class="arch-box">Neon PostgreSQL</div>
+          <div class="arch-box">DeepSeek API</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Flow -->
+    <h3 style="font-family:var(--font-sans);font-size:.85rem;font-weight:600;margin-bottom:20px;color:var(--text-secondary)" class="reveal">核心业务流程</h3>
+    <div class="flow-container reveal">
+      <div class="flow-row">
+        <div class="flow-node muted">注册 / 登录</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">创建项目</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">输入需求</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node primary">对话 Agent 引导</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node accent">编排器分析</div>
+      </div>
+      <div class="flow-label">&#8595; 用户确认 Agent 方案</div>
+      <div class="flow-row">
+        <div class="flow-node agent">需求分析</div>
+        <div class="flow-node agent">架构设计</div>
+        <div class="flow-node agent">ER 图</div>
+        <div class="flow-node agent">API 规范</div>
+        <div class="flow-node agent">开发计划</div>
+      </div>
+      <div class="flow-label">5 个 Agent 并行生成 &middot; SSE 实时推送 &#8595;</div>
+      <div class="flow-row">
+        <div class="flow-node">文档预览 / 编辑</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node muted">导出 SVG / Markdown</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 3: USERS ============ -->
+<section id="users">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 03</p>
+    <h2 class="ch-title reveal">用户需求与业务场景</h2>
+    <p class="ch-desc reveal">三种角色、五条业务流程、十一项用户需求</p>
+
+    <div class="card-grid cols-3 mb-48">
+      <div class="card reveal">
+        <div class="card-tag">核心角色</div>
+        <h3>&#128187; 开发者</h3>
+        <p>输入自然语言需求，使用 AI 生成全套设计文档，编辑和导出最终成果。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">核心角色</div>
+        <h3>&#128736; 架构师</h3>
+        <p>审阅 AI 生成的设计方案，调整架构图和 API 规范，管理文档版本和技术偏好。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">核心角色</div>
+        <h3>&#128202; 产品经理</h3>
+        <p>提出业务需求，使用模板快速启动项目，在仪表盘总览项目状态。</p>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-sans);font-size:.85rem;font-weight:600;margin-bottom:20px;color:var(--text-secondary)" class="reveal">核心业务流程</h3>
+    <div class="timeline reveal">
+      <div class="timeline-item done"><h4>1. 用户入驻</h4><p>邮箱密码注册 / GitHub OAuth 一键登录 / 个人资料管理</p></div>
+      <div class="timeline-item done"><h4>2. 项目管理</h4><p>创建项目、编辑信息、归档删除、模板快速创建</p></div>
+      <div class="timeline-item done"><h4>3. AI 辅助设计</h4><p>对话式需求采集 &rarr; 智能编排 &rarr; 多 Agent 并行生成 &rarr; 文档交付</p></div>
+      <div class="timeline-item done"><h4>4. 文档迭代</h4><p>查看文档 &rarr; 手动编辑 &rarr; 追加需求 &rarr; 增量生成新版本</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 4: FUNCTIONAL REQUIREMENTS ============ -->
+<section id="functions">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 04</p>
+    <h2 class="ch-title reveal">功能需求 — 十大功能模块</h2>
+    <p class="ch-desc reveal">涵盖认证、项目管理、AI 对话、Agent 编排、文档生成等完整链路</p>
+
+    <div class="card-grid cols-2 mb-48">
+      <div class="card reveal">
+        <div class="card-tag">F-01</div>
+        <h3>用户注册</h3>
+        <p>邮箱 + 密码（8-100 位，含大小写和数字）或 GitHub OAuth。bcrypt 加密存储，自动登录。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">F-02</div>
+        <h3>用户登录</h3>
+        <p>Credentials 或 GitHub OAuth 双通道。JWT 无状态令牌，中间件自动保护路由。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">F-03</div>
+        <h3>项目管理 CRUD</h3>
+        <p>创建 / 查看 / 编辑 / 删除项目。支持模板快速创建，级联删除关联数据。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">F-04</div>
+        <h3>对话式需求采集</h3>
+        <p>对话 Agent（temp=0.7）多轮引导用户细化需求。SSE 流式推送，检测 [READY] 自动触发编排。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">F-05</div>
+        <h3>Agent 编排</h3>
+        <p>编排器（temp=0.1）分析需求，返回 Agent 组合。用户可勾选/取消，异常时降级到默认方案。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">F-06</div>
+        <h3>多 Agent 并行生成</h3>
+        <p>5 个专业 Agent 通过 Promise.all 并行执行。SSE 实时推送进度，append-only 版本控制。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">F-07</div>
+        <h3>文档预览与编辑</h3>
+        <p>5 个标签页切换。Mermaid 图表支持缩放平移，编辑模式保存自动创建新版本。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">F-08 / 09 / 10</div>
+        <h3>模板 &middot; 用户画像</h3>
+        <p>5 个内置项目模板。user.md 个人上下文（AI 自动引用）。</p>
+      </div>
+    </div>
+
+    <!-- API Endpoints -->
+    <h3 style="font-family:var(--font-sans);font-size:.85rem;font-weight:600;margin-bottom:16px;color:var(--text-secondary)" class="reveal">API 接口一览（17 个端点）</h3>
+    <div style="background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);overflow:hidden;max-width:1100px" class="reveal">
+      <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/api/register</span><span class="api-desc">用户注册</span><span class="api-auth no">公开</span></div>
+      <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/api/auth/[...nextauth]</span><span class="api-desc">NextAuth 回调</span><span class="api-auth no">公开</span></div>
+      <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/api/user</span><span class="api-desc">获取用户信息</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method patch">PATCH</span><span class="api-path">/api/user</span><span class="api-desc">更新 user.md / 偏好</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/api/sessions</span><span class="api-desc">获取项目列表</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/api/sessions</span><span class="api-desc">创建项目</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/api/sessions/[id]</span><span class="api-desc">获取项目详情</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method patch">PATCH</span><span class="api-path">/api/sessions/[id]</span><span class="api-desc">更新项目</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method delete">DEL</span><span class="api-path">/api/sessions/[id]</span><span class="api-desc">删除项目</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/api/sessions/[id]/chat</span><span class="api-desc">AI 对话（SSE 流）</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/api/sessions/[id]/documents</span><span class="api-desc">获取文档列表</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/api/sessions/[id]/documents</span><span class="api-desc">保存文档</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/api/orchestrate</span><span class="api-desc">Agent 编排</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/api/generate</span><span class="api-desc">多 Agent 生成（SSE）</span><span class="api-auth yes">认证</span></div>
+      <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/api/templates</span><span class="api-desc">获取模板列表</span><span class="api-auth yes">认证</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 5: ARCHITECTURE & FLOW ============ -->
+<section id="architecture">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 04+</p>
+    <h2 class="ch-title reveal">非功能需求 & 安全设计</h2>
+    <p class="ch-desc reveal">安全、易用、可维护、兼容 — 四维保障</p>
+
+    <div class="card-grid cols-4">
+      <div class="card reveal">
+        <div class="card-icon">&#128274;</div>
+        <h3>安全性</h3>
+        <p>bcrypt 加密（salt=10）<br>JWT 无状态令牌<br>三重 API 校验<br>Zod 输入验证<br>资源归属鉴权</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">&#9996;</div>
+        <h3>易用性</h3>
+        <p>对话式交互<br>SSE 实时反馈<br>一键生成<br>响应式设计<br>全中文界面</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">&#128295;</div>
+        <h3>可维护性</h3>
+        <p>四层架构分离<br>Drizzle ORM 抽象<br>Agent 独立文件<br>TypeScript 严格模式</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">&#127760;</div>
+        <h3>兼容性</h3>
+        <p>Chrome / Firefox / Safari / Edge<br>Vercel + Node.js 18+<br>OpenAI SDK 可切换<br>标准 PostgreSQL</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 6: DATA ============ -->
+<section id="data">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 05</p>
+    <h2 class="ch-title reveal">数据需求 — ER 图 & 数据字典</h2>
+    <p class="ch-desc reveal">6 张核心表，外键级联关联，append-only 版本控制</p>
+
+    <!-- ER Diagram Visual -->
+    <div class="er-container mb-48">
+      <div class="er-entity reveal">
+        <div class="er-entity-header">users</div>
+        <div class="er-entity-body">
+          <div class="er-field pk"><span class="name">id</span><span class="type">UUID PK</span></div>
+          <div class="er-field"><span class="name">email</span><span class="type">TEXT UNIQUE</span></div>
+          <div class="er-field"><span class="name">passwordHash</span><span class="type">TEXT</span></div>
+          <div class="er-field"><span class="name">userMd</span><span class="type">TEXT</span></div>
+          <div class="er-field"><span class="name">preferences</span><span class="type">JSONB</span></div>
+        </div>
+      </div>
+      <div class="er-relation reveal"><span class="label">1 : N</span><div class="line"></div></div>
+      <div class="er-entity reveal">
+        <div class="er-entity-header secondary">sessions</div>
+        <div class="er-entity-body">
+          <div class="er-field pk"><span class="name">id</span><span class="type">UUID PK</span></div>
+          <div class="er-field fk"><span class="name">userId</span><span class="type">UUID FK</span></div>
+          <div class="er-field"><span class="name">title</span><span class="type">TEXT</span></div>
+          <div class="er-field"><span class="name">status</span><span class="type">ENUM</span></div>
+        </div>
+      </div>
+      <div class="er-relation reveal"><span class="label">1 : N</span><div class="line"></div></div>
+      <div class="er-entity reveal">
+        <div class="er-entity-header tertiary">documents</div>
+        <div class="er-entity-body">
+          <div class="er-field pk"><span class="name">id</span><span class="type">UUID PK</span></div>
+          <div class="er-field fk"><span class="name">sessionId</span><span class="type">UUID FK</span></div>
+          <div class="er-field"><span class="name">type</span><span class="type">ENUM</span></div>
+          <div class="er-field"><span class="name">content</span><span class="type">TEXT</span></div>
+          <div class="er-field"><span class="name">version</span><span class="type">INT</span></div>
+          <div class="er-field fk"><span class="name">parentVersionId</span><span class="type">UUID FK &#8635;</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="er-container mb-48">
+      <div class="er-entity reveal">
+        <div class="er-entity-header secondary">sessions</div>
+        <div class="er-entity-body" style="padding:10px 16px;font-size:.75rem;color:var(--text-secondary);text-align:center">&#8593; 同上</div>
+      </div>
+      <div class="er-relation reveal"><span class="label">1 : N</span><div class="line"></div></div>
+      <div class="er-entity reveal">
+        <div class="er-entity-header" style="background:#7C3AED">messages</div>
+        <div class="er-entity-body">
+          <div class="er-field pk"><span class="name">id</span><span class="type">UUID PK</span></div>
+          <div class="er-field fk"><span class="name">sessionId</span><span class="type">UUID FK</span></div>
+          <div class="er-field"><span class="name">role</span><span class="type">ENUM</span></div>
+          <div class="er-field"><span class="name">content</span><span class="type">TEXT</span></div>
+          <div class="er-field"><span class="name">metadata</span><span class="type">JSONB</span></div>
+        </div>
+      </div>
+      <div style="width:40px"></div>
+      <div class="er-entity reveal">
+        <div class="er-entity-header" style="background:#0D9488">templates</div>
+        <div class="er-entity-body">
+          <div class="er-field pk"><span class="name">id</span><span class="type">UUID PK</span></div>
+          <div class="er-field"><span class="name">name</span><span class="type">TEXT</span></div>
+          <div class="er-field"><span class="name">prompt</span><span class="type">TEXT</span></div>
+          <div class="er-field"><span class="name">isBuiltin</span><span class="type">BOOLEAN</span></div>
+        </div>
+      </div>
+      <div style="width:40px"></div>
+      <div class="er-entity reveal">
+        <div class="er-entity-header" style="background:#B45309">accounts</div>
+        <div class="er-entity-body">
+          <div class="er-field fk"><span class="name">userId</span><span class="type">UUID FK</span></div>
+          <div class="er-field pk"><span class="name">provider</span><span class="type">TEXT PK</span></div>
+          <div class="er-field pk"><span class="name">providerAccountId</span><span class="type">TEXT PK</span></div>
+          <div class="er-field"><span class="name">access_token</span><span class="type">TEXT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Dictionary Sample -->
+    <h3 style="font-family:var(--font-sans);font-size:.85rem;font-weight:600;margin-bottom:16px;color:var(--text-secondary)" class="reveal">数据字典（documents 表示例）</h3>
+    <div style="overflow-x:auto" class="reveal">
+      <table class="data-table">
+        <thead><tr><th>字段</th><th>类型</th><th>关键字</th><th>可空</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td class="pk">id</td><td><code>UUID</code></td><td class="pk">PK</td><td>否</td><td>文档唯一标识</td></tr>
+          <tr><td class="fk">sessionId</td><td><code>UUID</code></td><td class="fk">FK, INDEX</td><td>否</td><td>所属项目</td></tr>
+          <tr><td>type</td><td><code>ENUM</code></td><td>—</td><td>否</td><td>mermaid / api_spec / arch_design / dev_plan / markdown</td></tr>
+          <tr><td>diagramType</td><td><code>ENUM</code></td><td>—</td><td>是</td><td>architecture / er / flow / sequence / class / other</td></tr>
+          <tr><td>title</td><td><code>TEXT</code></td><td>—</td><td>是</td><td>文档标题</td></tr>
+          <tr><td>content</td><td><code>TEXT</code></td><td>—</td><td>否</td><td>文档内容，默认空串</td></tr>
+          <tr><td>version</td><td><code>INTEGER</code></td><td>—</td><td>否</td><td>版本号，默认 1</td></tr>
+          <tr><td class="fk">parentVersionId</td><td><code>UUID</code></td><td class="fk">FK (self)</td><td>是</td><td>上一版本 ID（自引用）</td></tr>
+          <tr><td>createdAt</td><td><code>TIMESTAMP</code></td><td>—</td><td>否</td><td>创建时间</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 7: PERFORMANCE ============ -->
+<section id="performance">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 04+</p>
+    <h2 class="ch-title reveal">性能指标 & 运行环境</h2>
+    <p class="ch-desc reveal">关键性能基线与技术栈配置</p>
+
+    <div class="mb-48">
+      <div class="perf-item reveal"><span class="perf-label">页面首屏加载</span><div class="perf-bar-bg"><div class="perf-bar" data-width="85"></div></div><span class="perf-val">&le; 2s</span></div>
+      <div class="perf-item reveal"><span class="perf-label">AI 首 token 延迟</span><div class="perf-bar-bg"><div class="perf-bar" data-width="70"></div></div><span class="perf-val">&le; 3s</span></div>
+      <div class="perf-item reveal"><span class="perf-label">多 Agent 总生成</span><div class="perf-bar-bg"><div class="perf-bar" data-width="60"></div></div><span class="perf-val">&le; 60s</span></div>
+      <div class="perf-item reveal"><span class="perf-label">API 响应时间</span><div class="perf-bar-bg"><div class="perf-bar" data-width="90"></div></div><span class="perf-val">&le; 500ms</span></div>
+      <div class="perf-item reveal"><span class="perf-label">SSE 推送延迟</span><div class="perf-bar-bg"><div class="perf-bar" data-width="92"></div></div><span class="perf-val">&le; 200ms</span></div>
+      <div class="perf-item reveal"><span class="perf-label">数据库查询</span><div class="perf-bar-bg"><div class="perf-bar" data-width="95"></div></div><span class="perf-val">&le; 100ms</span></div>
+      <div class="perf-item reveal"><span class="perf-label">月度可用性</span><div class="perf-bar-bg"><div class="perf-bar" data-width="99"></div></div><span class="perf-val">99.5%</span></div>
+    </div>
+
+    <h3 style="font-family:var(--font-sans);font-size:.85rem;font-weight:600;margin-bottom:16px;color:var(--text-secondary)" class="reveal">技术栈概览</h3>
+    <div class="card-grid cols-4">
+      <div class="card reveal" style="text-align:center">
+        <div style="font-size:2rem;margin-bottom:8px">&#9881;</div>
+        <h3>Next.js 16</h3>
+        <p style="font-size:.78rem">App Router + Turbopack<br>React 19 + TypeScript</p>
+      </div>
+      <div class="card reveal" style="text-align:center">
+        <div style="font-size:2rem;margin-bottom:8px">&#128451;</div>
+        <h3>Neon PostgreSQL</h3>
+        <p style="font-size:.78rem">Serverless 云数据库<br>Drizzle ORM 0.45</p>
+      </div>
+      <div class="card reveal" style="text-align:center">
+        <div style="font-size:2rem;margin-bottom:8px">&#129302;</div>
+        <h3>DeepSeek API</h3>
+        <p style="font-size:.78rem">OpenAI SDK 兼容<br>7 个专业 Agent</p>
+      </div>
+      <div class="card reveal" style="text-align:center">
+        <div style="font-size:2rem;margin-bottom:8px">&#9889;</div>
+        <h3>Vercel</h3>
+        <p style="font-size:.78rem">Serverless Functions<br>全球 CDN + SSL</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 8: ACCEPTANCE ============ -->
+<section id="acceptance">
+  <div class="max-w">
+    <p class="ch-num reveal">Chapter 07</p>
+    <h2 class="ch-title reveal">验收需求 — 22 项验收标准</h2>
+    <p class="ch-desc reveal">覆盖功能、性能、安全、可用性、兼容性、可维护性、文档完整性七个维度</p>
+
+    <div class="card-grid cols-2">
+      <div class="card reveal">
+        <div class="card-tag">功能性验收</div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>FA-01</strong> 邮箱密码注册并自动登录</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>FA-02</strong> GitHub OAuth 一键登录</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>FA-05</strong> 编排器返回合理 Agent 组合</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>FA-06</strong> 5 个 Agent 并行生成相关文档</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>FA-08</strong> Mermaid 图表正确渲染缩放</div></div>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">安全性验收</div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>SA-01</strong> 密码仅存储 bcrypt 哈希</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>SA-02</strong> 未认证用户无法访问受保护路由</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>SA-03</strong> 用户间数据隔离</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>SA-04</strong> 超长输入被 Zod 拦截返回 400</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>SA-05</strong> JWT 过期后自动失效</div></div>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">性能 & 可用性</div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>PA-01</strong> 首屏加载 &le; 2s</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>PA-03</strong> 5 Agent 并行 &le; 60s</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>UA-01</strong> 新用户无需查阅文档即可完成全流程</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>UA-02</strong> 生成过程有实时进度提示</div></div>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-tag">兼容性 & 可维护性</div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>CA-01</strong> 4 大浏览器最新两版本正常运行</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>CA-03</strong> Mermaid 跨浏览器正确渲染</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>MA-01</strong> TypeScript 严格模式编译无报错</div></div>
+          <div class="check-item"><div class="check-icon">&#10003;</div><div class="check-text"><strong>MA-04</strong> pnpm build 构建成功</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ END SLIDE ============ -->
+<section class="end-slide" id="end">
+  <p class="end-tag reveal">CycleMind &mdash; AI-Driven Software Design Platform</p>
+  <h2 class="reveal">感谢聆听</h2>
+  <p class="reveal" style="margin-top:12px">从需求到设计，AI 一步到位</p>
+</section>
+
+<script>
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+/* ── Progress Bar ── */
+gsap.to('#progressBar', {
+  width: '100%',
+  ease: 'none',
+  scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: .3 }
+});
+
+/* ── Nav scroll shadow ── */
+ScrollTrigger.create({
+  start: 60,
+  onUpdate(self) {
+    document.getElementById('mainNav').classList.toggle('scrolled', self.progress > 0);
+  }
+});
+
+/* ── Nav active link ── */
+document.querySelectorAll('section[id]').forEach(sec => {
+  ScrollTrigger.create({
+    trigger: sec,
+    start: 'top center',
+    end: 'bottom center',
+    onEnter() { setActive(sec.id) },
+    onEnterBack() { setActive(sec.id) }
+  });
+});
+function setActive(id) {
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+  });
+}
+
+/* ── Smooth scroll nav ── */
+document.querySelectorAll('.nav-links a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    gsap.to(window, { duration: .8, scrollTo: { y: a.getAttribute('href'), offsetY: 60 }, ease: 'power2.inOut' });
+  });
+});
+
+/* ── Hero entrance ── */
+const heroTl = gsap.timeline({ delay: .2 });
+heroTl.to('.hero-tag', { opacity: 1, y: 0, duration: .6, ease: 'power2.out' })
+  .to('.hero h1', { opacity: 1, y: 0, duration: .7, ease: 'power2.out' }, '-=.3')
+  .to('.hero-sub', { opacity: 1, y: 0, duration: .6, ease: 'power2.out' }, '-=.3')
+  .to('.hero-meta', { opacity: 1, y: 0, duration: .5, ease: 'power2.out' }, '-=.2');
+
+/* ── Reveal on scroll ── */
+gsap.utils.toArray('.reveal').forEach(el => {
+  gsap.fromTo(el,
+    { opacity: 0, y: 24 },
+    {
+      opacity: 1, y: 0, duration: .6, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+      stagger: .08
+    }
+  );
+});
+
+/* ── Card stagger per grid ── */
+gsap.utils.toArray('.card-grid').forEach(grid => {
+  const cards = grid.querySelectorAll('.card');
+  gsap.fromTo(cards,
+    { opacity: 0, y: 20 },
+    {
+      opacity: 1, y: 0, duration: .5, stagger: .1, ease: 'power2.out',
+      scrollTrigger: { trigger: grid, start: 'top 85%' }
+    }
+  );
+});
+
+/* ── Counter animation ── */
+gsap.utils.toArray('.stat-num').forEach(el => {
+  const target = parseInt(el.dataset.count);
+  ScrollTrigger.create({
+    trigger: el,
+    start: 'top 88%',
+    once: true,
+    onEnter() {
+      gsap.to(el, {
+        duration: 1.2,
+        ease: 'power2.out',
+        onUpdate() {
+          el.textContent = Math.round(gsap.getProperty(el, '--v'));
+        },
+        '--v': target
+      });
+      gsap.set(el, { '--v': 0 });
+      gsap.to(el, { '--v': target, duration: 1.2, ease: 'power2.out',
+        onUpdate() { el.textContent = Math.round(parseFloat(getComputedStyle(el).getPropertyValue('--v')) || 0); }
+      });
+    }
+  });
+});
+
+/* ── Performance bars ── */
+gsap.utils.toArray('.perf-bar').forEach(bar => {
+  ScrollTrigger.create({
+    trigger: bar,
+    start: 'top 90%',
+    once: true,
+    onEnter() {
+      gsap.to(bar, { width: bar.dataset.width + '%', duration: 1.2, ease: 'power2.out' });
+    }
+  });
+});
+
+/* ── Architecture layers cascade ── */
+gsap.utils.toArray('.arch-layer').forEach((layer, i) => {
+  gsap.fromTo(layer,
+    { opacity: 0, x: -30 },
+    {
+      opacity: 1, x: 0, duration: .6, delay: i * .15, ease: 'power2.out',
+      scrollTrigger: { trigger: layer, start: 'top 88%' }
+    }
+  );
+});
+
+/* ── Flow nodes cascade ── */
+gsap.utils.toArray('.flow-row').forEach(row => {
+  const nodes = row.querySelectorAll('.flow-node, .flow-arrow');
+  gsap.fromTo(nodes,
+    { opacity: 0, scale: .9 },
+    {
+      opacity: 1, scale: 1, duration: .4, stagger: .08, ease: 'back.out(1.4)',
+      scrollTrigger: { trigger: row, start: 'top 88%' }
+    }
+  );
+});
+
+/* ── ER entities pop in ── */
+gsap.utils.toArray('.er-entity').forEach((entity, i) => {
+  gsap.fromTo(entity,
+    { opacity: 0, scale: .85, y: 16 },
+    {
+      opacity: 1, scale: 1, y: 0, duration: .5, delay: i * .1, ease: 'back.out(1.6)',
+      scrollTrigger: { trigger: entity, start: 'top 88%' }
+    }
+  );
+});
+
+/* ── Timeline items ── */
+gsap.utils.toArray('.timeline-item').forEach((item, i) => {
+  gsap.fromTo(item,
+    { opacity: 0, x: -20 },
+    {
+      opacity: 1, x: 0, duration: .5, delay: i * .12, ease: 'power2.out',
+      scrollTrigger: { trigger: item, start: 'top 90%' }
+    }
+  );
+});
+
+/* ── Check items ── */
+gsap.utils.toArray('.check-item').forEach((item, i) => {
+  gsap.fromTo(item,
+    { opacity: 0, x: -12 },
+    {
+      opacity: 1, x: 0, duration: .35, delay: (i % 5) * .08, ease: 'power2.out',
+      scrollTrigger: { trigger: item, start: 'top 92%' }
+    }
+  );
+});
+
+/* ── API rows ── */
+gsap.utils.toArray('.api-row').forEach((row, i) => {
+  gsap.fromTo(row,
+    { opacity: 0, x: -16 },
+    {
+      opacity: 1, x: 0, duration: .3, delay: i * .04, ease: 'power2.out',
+      scrollTrigger: { trigger: row, start: 'top 92%' }
+    }
+  );
+});
+
+/* ── End slide ── */
+const endEls = document.querySelectorAll('.end-slide .reveal');
+gsap.fromTo(endEls,
+  { opacity: 0, y: 30 },
+  {
+    opacity: 1, y: 0, duration: .8, stagger: .15, ease: 'power2.out',
+    scrollTrigger: { trigger: '.end-slide', start: 'top 70%' }
+  }
+);
+</script>
+</body>
+</html>
